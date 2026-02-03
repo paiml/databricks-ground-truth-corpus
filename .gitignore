@@ -25,6 +25,9 @@ ENV/
 *.json.tmp
 test-output/
 
+# mdBook output
+book/output/
+
 # OS
 .DS_Store
 Thumbs.db

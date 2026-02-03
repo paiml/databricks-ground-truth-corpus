@@ -1,0 +1,21 @@
+[book]
+title = "Databricks Ground Truth Corpus"
+authors = ["PAIML Team"]
+description = "Popperian falsification corpus for Databricks open-source projects"
+language = "en"
+multilingual = false
+src = "book/src"
+
+[build]
+build-dir = "book/output"
+create-missing = false
+
+[output.html]
+default-theme = "navy"
+preferred-dark-theme = "navy"
+git-repository-url = "https://github.com/paiml/databricks-ground-truth-corpus"
+edit-url-template = "https://github.com/paiml/databricks-ground-truth-corpus/edit/main/{path}"
+
+[output.html.fold]
+enable = true
+level = 1
