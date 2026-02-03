@@ -1,0 +1,26 @@
+{
+  "benchmark": "TPC-H",
+  "specification_version": "3.0.1",
+  "scale_factor": 1,
+  "source": "TPC-H Specification v3.0.1, Section 4.2.3",
+  "tables": {
+    "lineitem": 6001215,
+    "orders": 1500000,
+    "customer": 150000,
+    "part": 200000,
+    "partsupp": 800000,
+    "supplier": 10000,
+    "nation": 25,
+    "region": 5
+  },
+  "formulas": {
+    "lineitem": "SF * 6,000,000 (average)",
+    "orders": "SF * 1,500,000",
+    "customer": "SF * 150,000",
+    "part": "SF * 200,000",
+    "partsupp": "SF * 800,000",
+    "supplier": "SF * 10,000",
+    "nation": "25 (fixed)",
+    "region": "5 (fixed)"
+  }
+}
