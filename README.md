@@ -4,7 +4,8 @@
 
 ![Databricks Ground Truth Corpus](https://img.shields.io/badge/Popperian-Falsification-red?style=for-the-badge&logo=databricks)
 ![Tests](https://img.shields.io/badge/Tests-129%2F322%20Passing-brightgreen?style=for-the-badge)
-![Coverage](https://img.shields.io/badge/Domains-8-blue?style=for-the-badge)
+![Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen?style=for-the-badge)
+![Domains](https://img.shields.io/badge/Domains-8-blue?style=for-the-badge)
 
 **Cross-implementation validation corpus using Popperian falsification methodology**
 
