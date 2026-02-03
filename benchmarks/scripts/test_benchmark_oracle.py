@@ -28,7 +28,6 @@ import json
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -36,10 +35,11 @@ import numpy as np
 @dataclass
 class TestResult:
     """Result of a single test case."""
+
     name: str
     passed: bool
     message: str
-    details: Dict = field(default_factory=dict)
+    details: dict = field(default_factory=dict)
 
 
 # =============================================================================
@@ -96,7 +96,8 @@ TPCH_SF1_EXPECTED = {
 # TPC-DS Validation
 # =============================================================================
 
-def validate_tpcds_oracle(oracle_path: Path) -> List[TestResult]:
+
+def validate_tpcds_oracle(oracle_path: Path) -> list[TestResult]:
     """Validate TPC-DS oracle against specification."""
     results = []
 
@@ -104,36 +105,44 @@ def validate_tpcds_oracle(oracle_path: Path) -> List[TestResult]:
     row_counts_file = oracle_path / "oracle" / "tpcds" / "sf1" / "row_counts.json"
 
     if not row_counts_file.exists():
-        results.append(TestResult(
-            name="TPC-DS Oracle File Exists",
-            passed=False,
-            message=f"Oracle file not found: {row_counts_file}",
-        ))
+        results.append(
+            TestResult(
+                name="TPC-DS Oracle File Exists",
+                passed=False,
+                message=f"Oracle file not found: {row_counts_file}",
+            )
+        )
         return results
 
-    results.append(TestResult(
-        name="TPC-DS Oracle File Exists",
-        passed=True,
-        message=f"Found: {row_counts_file}",
-    ))
+    results.append(
+        TestResult(
+            name="TPC-DS Oracle File Exists",
+            passed=True,
+            message=f"Found: {row_counts_file}",
+        )
+    )
 
     with open(row_counts_file) as f:
         oracle_data = json.load(f)
 
     # Validate structure
     if "tables" not in oracle_data:
-        results.append(TestResult(
-            name="TPC-DS Oracle Structure",
-            passed=False,
-            message="Missing 'tables' key in oracle data",
-        ))
+        results.append(
+            TestResult(
+                name="TPC-DS Oracle Structure",
+                passed=False,
+                message="Missing 'tables' key in oracle data",
+            )
+        )
         return results
 
-    results.append(TestResult(
-        name="TPC-DS Oracle Structure",
-        passed=True,
-        message="Valid structure with 'tables' key",
-    ))
+    results.append(
+        TestResult(
+            name="TPC-DS Oracle Structure",
+            passed=True,
+            message="Valid structure with 'tables' key",
+        )
+    )
 
     # Validate each table count
     oracle_tables = oracle_data["tables"]
@@ -148,20 +157,25 @@ def validate_tpcds_oracle(oracle_path: Path) -> List[TestResult]:
             mismatches.append((table, expected_count, oracle_tables[table]))
             all_match = False
 
-    results.append(TestResult(
-        name="TPC-DS Row Counts Match Spec",
-        passed=all_match,
-        message=f"All {len(TPCDS_SF1_EXPECTED)} tables match specification" if all_match else
-                f"{len(mismatches)} mismatches found",
-        details={"mismatches": mismatches} if mismatches else {},
-    ))
+    results.append(
+        TestResult(
+            name="TPC-DS Row Counts Match Spec",
+            passed=all_match,
+            message=f"All {len(TPCDS_SF1_EXPECTED)} tables match specification"
+            if all_match
+            else f"{len(mismatches)} mismatches found",
+            details={"mismatches": mismatches} if mismatches else {},
+        )
+    )
 
     # Validate table count
-    results.append(TestResult(
-        name="TPC-DS Table Count",
-        passed=len(oracle_tables) == len(TPCDS_SF1_EXPECTED),
-        message=f"Oracle has {len(oracle_tables)} tables, spec has {len(TPCDS_SF1_EXPECTED)}",
-    ))
+    results.append(
+        TestResult(
+            name="TPC-DS Table Count",
+            passed=len(oracle_tables) == len(TPCDS_SF1_EXPECTED),
+            message=f"Oracle has {len(oracle_tables)} tables, spec has {len(TPCDS_SF1_EXPECTED)}",
+        )
+    )
 
     return results
 
@@ -170,7 +184,8 @@ def validate_tpcds_oracle(oracle_path: Path) -> List[TestResult]:
 # TPC-H Validation
 # =============================================================================
 
-def validate_tpch_oracle(oracle_path: Path) -> List[TestResult]:
+
+def validate_tpch_oracle(oracle_path: Path) -> list[TestResult]:
     """Validate TPC-H oracle against specification."""
     results = []
 
@@ -178,36 +193,44 @@ def validate_tpch_oracle(oracle_path: Path) -> List[TestResult]:
     row_counts_file = oracle_path / "oracle" / "tpch" / "sf1" / "row_counts.json"
 
     if not row_counts_file.exists():
-        results.append(TestResult(
-            name="TPC-H Oracle File Exists",
-            passed=False,
-            message=f"Oracle file not found: {row_counts_file}",
-        ))
+        results.append(
+            TestResult(
+                name="TPC-H Oracle File Exists",
+                passed=False,
+                message=f"Oracle file not found: {row_counts_file}",
+            )
+        )
         return results
 
-    results.append(TestResult(
-        name="TPC-H Oracle File Exists",
-        passed=True,
-        message=f"Found: {row_counts_file}",
-    ))
+    results.append(
+        TestResult(
+            name="TPC-H Oracle File Exists",
+            passed=True,
+            message=f"Found: {row_counts_file}",
+        )
+    )
 
     with open(row_counts_file) as f:
         oracle_data = json.load(f)
 
     # Validate structure
     if "tables" not in oracle_data:
-        results.append(TestResult(
-            name="TPC-H Oracle Structure",
-            passed=False,
-            message="Missing 'tables' key in oracle data",
-        ))
+        results.append(
+            TestResult(
+                name="TPC-H Oracle Structure",
+                passed=False,
+                message="Missing 'tables' key in oracle data",
+            )
+        )
         return results
 
-    results.append(TestResult(
-        name="TPC-H Oracle Structure",
-        passed=True,
-        message="Valid structure with 'tables' key",
-    ))
+    results.append(
+        TestResult(
+            name="TPC-H Oracle Structure",
+            passed=True,
+            message="Valid structure with 'tables' key",
+        )
+    )
 
     # Validate each table count
     oracle_tables = oracle_data["tables"]
@@ -222,26 +245,33 @@ def validate_tpch_oracle(oracle_path: Path) -> List[TestResult]:
             mismatches.append((table, expected_count, oracle_tables[table]))
             all_match = False
 
-    results.append(TestResult(
-        name="TPC-H Row Counts Match Spec",
-        passed=all_match,
-        message=f"All {len(TPCH_SF1_EXPECTED)} tables match specification" if all_match else
-                f"{len(mismatches)} mismatches found",
-        details={"mismatches": mismatches} if mismatches else {},
-    ))
+    results.append(
+        TestResult(
+            name="TPC-H Row Counts Match Spec",
+            passed=all_match,
+            message=f"All {len(TPCH_SF1_EXPECTED)} tables match specification"
+            if all_match
+            else f"{len(mismatches)} mismatches found",
+            details={"mismatches": mismatches} if mismatches else {},
+        )
+    )
 
     # Validate specific well-known values
-    results.append(TestResult(
-        name="TPC-H LINEITEM Count (6,001,215)",
-        passed=oracle_tables.get("lineitem") == 6001215,
-        message=f"LINEITEM = {oracle_tables.get('lineitem', 'MISSING')}",
-    ))
+    results.append(
+        TestResult(
+            name="TPC-H LINEITEM Count (6,001,215)",
+            passed=oracle_tables.get("lineitem") == 6001215,
+            message=f"LINEITEM = {oracle_tables.get('lineitem', 'MISSING')}",
+        )
+    )
 
-    results.append(TestResult(
-        name="TPC-H ORDERS Count (1,500,000)",
-        passed=oracle_tables.get("orders") == 1500000,
-        message=f"ORDERS = {oracle_tables.get('orders', 'MISSING')}",
-    ))
+    results.append(
+        TestResult(
+            name="TPC-H ORDERS Count (1,500,000)",
+            passed=oracle_tables.get("orders") == 1500000,
+            message=f"ORDERS = {oracle_tables.get('orders', 'MISSING')}",
+        )
+    )
 
     return results
 
@@ -249,6 +279,7 @@ def validate_tpch_oracle(oracle_path: Path) -> List[TestResult]:
 # =============================================================================
 # ALS Algorithm Validation
 # =============================================================================
+
 
 class SimpleALS:
     """Reference ALS implementation for validation."""
@@ -279,7 +310,7 @@ class SimpleALS:
 
         self.rmse_history = []
 
-        for iteration in range(self.n_iterations):
+        for _iteration in range(self.n_iterations):
             # Fix items, solve for users
             for u in range(n_users):
                 rated_items = np.where(mask[u])[0]
@@ -306,7 +337,7 @@ class SimpleALS:
             # Compute RMSE
             predictions = self.user_factors @ self.item_factors.T
             errors = (ratings - predictions) * mask
-            rmse = np.sqrt(np.sum(errors ** 2) / np.sum(mask))
+            rmse = np.sqrt(np.sum(errors**2) / np.sum(mask))
             self.rmse_history.append(rmse)
 
     def predict(self, user_idx: int, item_idx: int) -> float:
@@ -314,7 +345,7 @@ class SimpleALS:
         return float(self.user_factors[user_idx] @ self.item_factors[item_idx])
 
 
-def run_als_tests() -> List[TestResult]:
+def run_als_tests() -> list[TestResult]:
     """Run ALS algorithm property tests."""
     results = []
 
@@ -341,27 +372,31 @@ def run_als_tests() -> List[TestResult]:
     # Check convergence - allow small increases (1e-6) due to numerical issues
     is_converging = True
     for i in range(1, len(model.rmse_history)):
-        if model.rmse_history[i] > model.rmse_history[i-1] + 1e-4:
+        if model.rmse_history[i] > model.rmse_history[i - 1] + 1e-4:
             is_converging = False
             break
 
-    results.append(TestResult(
-        name="ALS RMSE Convergence",
-        passed=is_converging,
-        message=f"RMSE: {model.rmse_history[0]:.4f} -> {model.rmse_history[-1]:.4f}",
-        details={"rmse_history": [round(x, 4) for x in model.rmse_history]},
-    ))
+    results.append(
+        TestResult(
+            name="ALS RMSE Convergence",
+            passed=is_converging,
+            message=f"RMSE: {model.rmse_history[0]:.4f} -> {model.rmse_history[-1]:.4f}",
+            details={"rmse_history": [round(x, 4) for x in model.rmse_history]},
+        )
+    )
 
     # Test 2: Factor matrix shapes
-    correct_shapes = (
-        model.user_factors.shape == (n_users, 10) and
-        model.item_factors.shape == (n_items, 10)
+    correct_shapes = model.user_factors.shape == (n_users, 10) and model.item_factors.shape == (
+        n_items,
+        10,
     )
-    results.append(TestResult(
-        name="ALS Factor Matrix Shapes",
-        passed=correct_shapes,
-        message=f"User: {model.user_factors.shape}, Item: {model.item_factors.shape}",
-    ))
+    results.append(
+        TestResult(
+            name="ALS Factor Matrix Shapes",
+            passed=correct_shapes,
+            message=f"User: {model.user_factors.shape}, Item: {model.item_factors.shape}",
+        )
+    )
 
     # Test 3: Regularization effect
     model_low_reg = SimpleALS(n_factors=10, n_iterations=20, reg=0.01)
@@ -370,12 +405,14 @@ def run_als_tests() -> List[TestResult]:
     model_high_reg.fit(ratings)
 
     # Lower regularization should allow better fit (lower RMSE) on training data
-    results.append(TestResult(
-        name="ALS Regularization Effect",
-        passed=model_low_reg.rmse_history[-1] < model_high_reg.rmse_history[-1],
-        message=f"Low reg RMSE: {model_low_reg.rmse_history[-1]:.4f}, "
-                f"High reg RMSE: {model_high_reg.rmse_history[-1]:.4f}",
-    ))
+    results.append(
+        TestResult(
+            name="ALS Regularization Effect",
+            passed=model_low_reg.rmse_history[-1] < model_high_reg.rmse_history[-1],
+            message=f"Low reg RMSE: {model_low_reg.rmse_history[-1]:.4f}, "
+            f"High reg RMSE: {model_high_reg.rmse_history[-1]:.4f}",
+        )
+    )
 
     # Test 4: Rank effect (higher rank = better fit)
     model_low_rank = SimpleALS(n_factors=3, n_iterations=20, reg=0.1)
@@ -383,12 +420,14 @@ def run_als_tests() -> List[TestResult]:
     model_low_rank.fit(ratings)
     model_high_rank.fit(ratings)
 
-    results.append(TestResult(
-        name="ALS Rank Effect",
-        passed=model_high_rank.rmse_history[-1] <= model_low_rank.rmse_history[-1],
-        message=f"Rank 3 RMSE: {model_low_rank.rmse_history[-1]:.4f}, "
-                f"Rank 20 RMSE: {model_high_rank.rmse_history[-1]:.4f}",
-    ))
+    results.append(
+        TestResult(
+            name="ALS Rank Effect",
+            passed=model_high_rank.rmse_history[-1] <= model_low_rank.rmse_history[-1],
+            message=f"Rank 3 RMSE: {model_low_rank.rmse_history[-1]:.4f}, "
+            f"Rank 20 RMSE: {model_high_rank.rmse_history[-1]:.4f}",
+        )
+    )
 
     # Test 5: Determinism with same seed
     model1 = SimpleALS(n_factors=10, n_iterations=5, reg=0.1)
@@ -396,20 +435,24 @@ def run_als_tests() -> List[TestResult]:
     model1.fit(ratings)
     model2.fit(ratings)
 
-    results.append(TestResult(
-        name="ALS Determinism",
-        passed=np.allclose(model1.user_factors, model2.user_factors, atol=1e-10),
-        message="Same seed produces identical results",
-    ))
+    results.append(
+        TestResult(
+            name="ALS Determinism",
+            passed=np.allclose(model1.user_factors, model2.user_factors, atol=1e-10),
+            message="Same seed produces identical results",
+        )
+    )
 
     # Test 6: Predictions are in valid range
     all_preds = model.user_factors @ model.item_factors.T
     # Predictions should be finite
-    results.append(TestResult(
-        name="ALS Predictions Finite",
-        passed=np.all(np.isfinite(all_preds)),
-        message=f"All {all_preds.size} predictions are finite",
-    ))
+    results.append(
+        TestResult(
+            name="ALS Predictions Finite",
+            passed=np.all(np.isfinite(all_preds)),
+            message=f"All {all_preds.size} predictions are finite",
+        )
+    )
 
     return results
 
@@ -417,6 +460,7 @@ def run_als_tests() -> List[TestResult]:
 # =============================================================================
 # Main
 # =============================================================================
+
 
 def main():
     parser = argparse.ArgumentParser(description="Test benchmark oracle correctness")
@@ -467,18 +511,15 @@ def main():
     if args.output:
         output_data = {
             "tpcds_tests": [
-                {"name": r.name, "passed": r.passed, "message": r.message}
-                for r in tpcds_results
+                {"name": r.name, "passed": r.passed, "message": r.message} for r in tpcds_results
             ],
             "tpch_tests": [
-                {"name": r.name, "passed": r.passed, "message": r.message}
-                for r in tpch_results
+                {"name": r.name, "passed": r.passed, "message": r.message} for r in tpch_results
             ],
             "als_tests": [
-                {"name": r.name, "passed": r.passed, "message": r.message}
-                for r in als_results
+                {"name": r.name, "passed": r.passed, "message": r.message} for r in als_results
             ],
-            "summary": {"passed": passed, "total": total}
+            "summary": {"passed": passed, "total": total},
         }
         with open(args.output, "w") as f:
             json.dump(output_data, f, indent=2)

@@ -26,9 +26,7 @@ References:
 import argparse
 import hashlib
 import json
-import os
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 import torch
 from safetensors.torch import save_file
@@ -44,7 +42,7 @@ class MoELayerCapture:
     """Hook to capture MoE layer intermediate outputs."""
 
     def __init__(self):
-        self.captures: Dict[str, torch.Tensor] = {}
+        self.captures: dict[str, torch.Tensor] = {}
         self.layer_idx = 0
 
     def reset(self):
@@ -54,7 +52,7 @@ class MoELayerCapture:
     def create_hook(self, name: str):
         def hook(module, input, output):
             # Capture router logits if available
-            if hasattr(module, 'gate'):
+            if hasattr(module, "gate"):
                 with torch.no_grad():
                     hidden_states = input[0]
                     router_logits = module.gate(hidden_states)
@@ -70,7 +68,7 @@ class MoELayerCapture:
         return hook
 
 
-def extract_moe_config(model) -> Dict:
+def extract_moe_config(model) -> dict:
     """Extract MoE configuration from model."""
     config = model.config
     return {
@@ -85,11 +83,15 @@ def extract_moe_config(model) -> Dict:
 
 def generate_test_inputs(
     hidden_size: int,
-    batch_sizes: List[int] = [1],
-    seq_lengths: List[int] = [1, 128, 512],
+    batch_sizes: list[int] | None = None,
+    seq_lengths: list[int] | None = None,
     seed: int = 42,
-) -> List[Tuple[torch.Tensor, str]]:
+) -> list[tuple[torch.Tensor, str]]:
     """Generate deterministic test inputs."""
+    if seq_lengths is None:
+        seq_lengths = [1, 128, 512]
+    if batch_sizes is None:
+        batch_sizes = [1]
     torch.manual_seed(seed)
 
     inputs = []
@@ -119,7 +121,7 @@ def main():
     dtype = dtype_map[args.dtype]
 
     print(f"Loading model: {args.model}")
-    from transformers import AutoModelForCausalLM, AutoConfig
+    from transformers import AutoConfig, AutoModelForCausalLM
 
     config = AutoConfig.from_pretrained(args.model)
 
@@ -226,11 +228,13 @@ def main():
             with open(output_dir / f"{input_name}_{input_hash}.json", "w") as f:
                 json.dump(test_data, f, indent=2)
 
-            manifest["tests"].append({
-                "name": input_name,
-                "hash": input_hash,
-                "file": f"{input_name}_{input_hash}.safetensors",
-            })
+            manifest["tests"].append(
+                {
+                    "name": input_name,
+                    "hash": input_hash,
+                    "file": f"{input_name}_{input_hash}.safetensors",
+                }
+            )
 
             print(f"  Saved: {input_name}_{input_hash}.safetensors")
 

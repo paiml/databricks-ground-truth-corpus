@@ -25,27 +25,27 @@ References:
 
 import argparse
 import json
-import math
 import re
 import sys
 from dataclasses import dataclass, field
-from typing import Dict, List, Tuple
 
 
 @dataclass
 class TestResult:
     """Result of a single test case."""
+
     name: str
     passed: bool
     message: str
     expected: float = 0.0
     actual: float = 0.0
-    details: Dict = field(default_factory=dict)
+    details: dict = field(default_factory=dict)
 
 
 # =============================================================================
 # Text Statistics Functions
 # =============================================================================
+
 
 def count_characters(text: str, include_whitespace: bool = True) -> int:
     """Count characters in text."""
@@ -63,7 +63,7 @@ def count_words(text: str) -> int:
 def count_sentences(text: str) -> int:
     """Count sentences in text (approximate)."""
     # Split on sentence-ending punctuation
-    sentences = re.split(r'[.!?]+', text)
+    sentences = re.split(r"[.!?]+", text)
     # Filter empty strings
     sentences = [s.strip() for s in sentences if s.strip()]
     return len(sentences)
@@ -76,7 +76,7 @@ def count_syllables(word: str) -> int:
         return 0
 
     # Remove trailing 'e' (silent e)
-    if word.endswith('e') and len(word) > 2:
+    if word.endswith("e") and len(word) > 2:
         word = word[:-1]
 
     # Count vowel groups
@@ -218,119 +218,137 @@ under high-concurrency workloads.
 """
 
 
-def test_character_counts() -> List[TestResult]:
+def test_character_counts() -> list[TestResult]:
     """Test character counting."""
     results = []
 
     # Test with whitespace
     text = "Hello World"
     count = count_characters(text, include_whitespace=True)
-    results.append(TestResult(
-        name="Character count with whitespace",
-        passed=count == 11,
-        message=f"Count: {count}",
-        expected=11,
-        actual=count,
-    ))
+    results.append(
+        TestResult(
+            name="Character count with whitespace",
+            passed=count == 11,
+            message=f"Count: {count}",
+            expected=11,
+            actual=count,
+        )
+    )
 
     # Test without whitespace
     count = count_characters(text, include_whitespace=False)
-    results.append(TestResult(
-        name="Character count without whitespace",
-        passed=count == 10,
-        message=f"Count: {count}",
-        expected=10,
-        actual=count,
-    ))
+    results.append(
+        TestResult(
+            name="Character count without whitespace",
+            passed=count == 10,
+            message=f"Count: {count}",
+            expected=10,
+            actual=count,
+        )
+    )
 
     # Test empty
     count = count_characters("")
-    results.append(TestResult(
-        name="Character count empty",
-        passed=count == 0,
-        message=f"Count: {count}",
-        expected=0,
-        actual=count,
-    ))
+    results.append(
+        TestResult(
+            name="Character count empty",
+            passed=count == 0,
+            message=f"Count: {count}",
+            expected=0,
+            actual=count,
+        )
+    )
 
     return results
 
 
-def test_word_counts() -> List[TestResult]:
+def test_word_counts() -> list[TestResult]:
     """Test word counting."""
     results = []
 
     # Simple text
     count = count_words(SIMPLE_TEXT)
-    results.append(TestResult(
-        name="Word count simple text",
-        passed=count == 12,
-        message=f"Count: {count}",
-        expected=12,
-        actual=count,
-    ))
+    results.append(
+        TestResult(
+            name="Word count simple text",
+            passed=count == 12,
+            message=f"Count: {count}",
+            expected=12,
+            actual=count,
+        )
+    )
 
     # Empty text
     count = count_words("")
-    results.append(TestResult(
-        name="Word count empty",
-        passed=count == 0,
-        message=f"Count: {count}",
-        expected=0,
-        actual=count,
-    ))
+    results.append(
+        TestResult(
+            name="Word count empty",
+            passed=count == 0,
+            message=f"Count: {count}",
+            expected=0,
+            actual=count,
+        )
+    )
 
     # Multiple whitespace
     count = count_words("Hello   World    Test")
-    results.append(TestResult(
-        name="Word count multiple whitespace",
-        passed=count == 3,
-        message=f"Count: {count}",
-        expected=3,
-        actual=count,
-    ))
+    results.append(
+        TestResult(
+            name="Word count multiple whitespace",
+            passed=count == 3,
+            message=f"Count: {count}",
+            expected=3,
+            actual=count,
+        )
+    )
 
     return results
 
 
-def test_sentence_counts() -> List[TestResult]:
+def test_sentence_counts() -> list[TestResult]:
     """Test sentence counting."""
     results = []
 
     # Simple text
     count = count_sentences(SIMPLE_TEXT)
-    results.append(TestResult(
-        name="Sentence count simple text",
-        passed=count == 2,
-        message=f"Count: {count}",
-        expected=2,
-        actual=count,
-    ))
+    results.append(
+        TestResult(
+            name="Sentence count simple text",
+            passed=count == 2,
+            message=f"Count: {count}",
+            expected=2,
+            actual=count,
+        )
+    )
 
     # Different punctuation
     count = count_sentences("Hello! How are you? I am fine.")
-    results.append(TestResult(
-        name="Sentence count mixed punctuation",
-        passed=count == 3,
-        message=f"Count: {count}",
-        expected=3,
-        actual=count,
-    ))
+    results.append(
+        TestResult(
+            name="Sentence count mixed punctuation",
+            passed=count == 3,
+            message=f"Count: {count}",
+            expected=3,
+            actual=count,
+        )
+    )
 
     # Empty text
     count = count_sentences("")
-    results.append(TestResult(
-        name="Sentence count empty",
-        passed=count == 0,
-        message=f"Count: {count}",
-        expected=0,
-        actual=count,
-    ))
+    results.append(
+        TestResult(
+            name="Sentence count empty",
+            passed=count == 0,
+            message=f"Count: {count}",
+            expected=0,
+            actual=count,
+        )
+    )
 
     return results
 
 
-def test_syllable_counts() -> List[TestResult]:
+def test_syllable_counts() -> list[TestResult]:
     """Test syllable counting.
 
     Note: Syllable counting in English is inherently approximate without
@@ -341,7 +359,7 @@ def test_syllable_counts() -> List[TestResult]:
     # Test cases with expected approximate syllables
     # Algorithm may differ by ±1 for complex words
     test_cases = [
-        ("cat", 1, 1),      # min, max expected
+        ("cat", 1, 1),  # min, max expected
         ("hello", 2, 2),
         ("beautiful", 3, 4),  # Algorithm gets 3, actual is 4
         ("the", 1, 1),
@@ -355,164 +373,194 @@ def test_syllable_counts() -> List[TestResult]:
         if not (min_exp <= actual <= max_exp):
             all_reasonable = False
 
-    results.append(TestResult(
-        name="Syllable counting (approximate)",
-        passed=all_reasonable,
-        message=f"All {len(test_cases)} words within expected range",
-    ))
+    results.append(
+        TestResult(
+            name="Syllable counting (approximate)",
+            passed=all_reasonable,
+            message=f"All {len(test_cases)} words within expected range",
+        )
+    )
 
     # Test that single-letter words return 1
     single_syl = count_syllables("a")
-    results.append(TestResult(
-        name="Single letter syllable",
-        passed=single_syl == 1,
-        message=f"'a' = {single_syl} syllable",
-    ))
+    results.append(
+        TestResult(
+            name="Single letter syllable",
+            passed=single_syl == 1,
+            message=f"'a' = {single_syl} syllable",
+        )
+    )
 
     return results
 
 
-def test_readability_metrics() -> List[TestResult]:
+def test_readability_metrics() -> list[TestResult]:
     """Test readability score calculations."""
     results = []
 
     # Test Flesch Reading Ease - easy text should have high score
     easy_score = flesch_reading_ease(EASY_TEXT)
-    results.append(TestResult(
-        name="Flesch Reading Ease - easy text",
-        passed=easy_score > 80,
-        message=f"Score: {easy_score:.1f} (expected > 80)",
-        expected=80,
-        actual=easy_score,
-    ))
+    results.append(
+        TestResult(
+            name="Flesch Reading Ease - easy text",
+            passed=easy_score > 80,
+            message=f"Score: {easy_score:.1f} (expected > 80)",
+            expected=80,
+            actual=easy_score,
+        )
+    )
 
     # Test Flesch Reading Ease - complex text should have low score
     complex_score = flesch_reading_ease(COMPLEX_TEXT)
-    results.append(TestResult(
-        name="Flesch Reading Ease - complex text",
-        passed=complex_score < 40,
-        message=f"Score: {complex_score:.1f} (expected < 40)",
-        expected=40,
-        actual=complex_score,
-    ))
+    results.append(
+        TestResult(
+            name="Flesch Reading Ease - complex text",
+            passed=complex_score < 40,
+            message=f"Score: {complex_score:.1f} (expected < 40)",
+            expected=40,
+            actual=complex_score,
+        )
+    )
 
     # Test Flesch-Kincaid Grade - easy text should have low grade
     easy_grade = flesch_kincaid_grade(EASY_TEXT)
-    results.append(TestResult(
-        name="Flesch-Kincaid Grade - easy text",
-        passed=easy_grade < 5,
-        message=f"Grade: {easy_grade:.1f} (expected < 5)",
-        expected=5,
-        actual=easy_grade,
-    ))
+    results.append(
+        TestResult(
+            name="Flesch-Kincaid Grade - easy text",
+            passed=easy_grade < 5,
+            message=f"Grade: {easy_grade:.1f} (expected < 5)",
+            expected=5,
+            actual=easy_grade,
+        )
+    )
 
     # Test Flesch-Kincaid Grade - complex text should have high grade
     complex_grade = flesch_kincaid_grade(COMPLEX_TEXT)
-    results.append(TestResult(
-        name="Flesch-Kincaid Grade - complex text",
-        passed=complex_grade > 12,
-        message=f"Grade: {complex_grade:.1f} (expected > 12)",
-        expected=12,
-        actual=complex_grade,
-    ))
+    results.append(
+        TestResult(
+            name="Flesch-Kincaid Grade - complex text",
+            passed=complex_grade > 12,
+            message=f"Grade: {complex_grade:.1f} (expected > 12)",
+            expected=12,
+            actual=complex_grade,
+        )
+    )
 
     # Test ARI
     ari = automated_readability_index(TECHNICAL_TEXT)
-    results.append(TestResult(
-        name="ARI - technical text",
-        passed=ari > 10,
-        message=f"ARI: {ari:.1f} (expected > 10)",
-        expected=10,
-        actual=ari,
-    ))
+    results.append(
+        TestResult(
+            name="ARI - technical text",
+            passed=ari > 10,
+            message=f"ARI: {ari:.1f} (expected > 10)",
+            expected=10,
+            actual=ari,
+        )
+    )
 
     # Test Coleman-Liau
     cli = coleman_liau_index(TECHNICAL_TEXT)
-    results.append(TestResult(
-        name="Coleman-Liau - technical text",
-        passed=cli > 10,
-        message=f"CLI: {cli:.1f} (expected > 10)",
-        expected=10,
-        actual=cli,
-    ))
+    results.append(
+        TestResult(
+            name="Coleman-Liau - technical text",
+            passed=cli > 10,
+            message=f"CLI: {cli:.1f} (expected > 10)",
+            expected=10,
+            actual=cli,
+        )
+    )
 
     return results
 
 
-def test_averages() -> List[TestResult]:
+def test_averages() -> list[TestResult]:
     """Test average calculations."""
     results = []
 
     # Average word length
     awl = avg_word_length(SIMPLE_TEXT)
-    results.append(TestResult(
-        name="Average word length",
-        passed=2.5 < awl < 4.5,
-        message=f"AWL: {awl:.2f}",
-        actual=awl,
-    ))
+    results.append(
+        TestResult(
+            name="Average word length",
+            passed=2.5 < awl < 4.5,
+            message=f"AWL: {awl:.2f}",
+            actual=awl,
+        )
+    )
 
     # Average sentence length
     asl = avg_sentence_length(SIMPLE_TEXT)
-    results.append(TestResult(
-        name="Average sentence length",
-        passed=asl == 6.0,
-        message=f"ASL: {asl:.1f}",
-        expected=6.0,
-        actual=asl,
-    ))
+    results.append(
+        TestResult(
+            name="Average sentence length",
+            passed=asl == 6.0,
+            message=f"ASL: {asl:.1f}",
+            expected=6.0,
+            actual=asl,
+        )
+    )
 
     # Empty text handling
     awl_empty = avg_word_length("")
     asl_empty = avg_sentence_length("")
-    results.append(TestResult(
-        name="Averages on empty text",
-        passed=awl_empty == 0 and asl_empty == 0,
-        message=f"AWL: {awl_empty}, ASL: {asl_empty}",
-    ))
+    results.append(
+        TestResult(
+            name="Averages on empty text",
+            passed=awl_empty == 0 and asl_empty == 0,
+            message=f"AWL: {awl_empty}, ASL: {asl_empty}",
+        )
+    )
 
     return results
 
 
-def test_edge_cases() -> List[TestResult]:
+def test_edge_cases() -> list[TestResult]:
     """Test edge cases."""
     results = []
 
     # Unicode text
     unicode_text = "Cześć, jak się masz?"
     count = count_words(unicode_text)
-    results.append(TestResult(
-        name="Unicode word count",
-        passed=count == 4,
-        message=f"Count: {count}",
-    ))
+    results.append(
+        TestResult(
+            name="Unicode word count",
+            passed=count == 4,
+            message=f"Count: {count}",
+        )
+    )
 
     # Numbers in text
     text_with_numbers = "I have 3 apples and 5 oranges."
     count = count_words(text_with_numbers)
-    results.append(TestResult(
-        name="Word count with numbers",
-        passed=count == 7,
-        message=f"Count: {count}",
-    ))
+    results.append(
+        TestResult(
+            name="Word count with numbers",
+            passed=count == 7,
+            message=f"Count: {count}",
+        )
+    )
 
     # Very long word
     long_word = "pneumonoultramicroscopicsilicovolcanoconiosis"
     syllables = count_syllables(long_word)
-    results.append(TestResult(
-        name="Long word syllables",
-        passed=syllables >= 15,
-        message=f"Syllables: {syllables}",
-    ))
+    results.append(
+        TestResult(
+            name="Long word syllables",
+            passed=syllables >= 15,
+            message=f"Syllables: {syllables}",
+        )
+    )
 
     # Single sentence, no period
     text = "Hello world"
     sentences = count_sentences(text)
-    results.append(TestResult(
-        name="Sentence without period",
-        passed=sentences == 1,
-        message=f"Sentences: {sentences}",
-    ))
+    results.append(
+        TestResult(
+            name="Sentence without period",
+            passed=sentences == 1,
+            message=f"Sentences: {sentences}",
+        )
+    )
 
     return results
 
@@ -520,6 +568,7 @@ def test_edge_cases() -> List[TestResult]:
 # =============================================================================
 # Main
 # =============================================================================
+
 
 def main():
     parser = argparse.ArgumentParser(description="Test text statistics")

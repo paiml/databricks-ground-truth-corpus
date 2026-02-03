@@ -27,7 +27,6 @@ import argparse
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
@@ -37,6 +36,7 @@ from safetensors.torch import load_file
 @dataclass
 class Tolerance:
     """IEEE 754-based tolerance for floating-point comparison."""
+
     atol: float
     rtol: float
     name: str
@@ -61,9 +61,10 @@ class Tolerance:
 @dataclass
 class TensorDiff:
     """Statistics about tensor differences."""
+
     max_diff: float
     mean_diff: float
-    max_diff_idx: Tuple[int, ...]
+    max_diff_idx: tuple[int, ...]
     mismatch_ratio: float
     shape_match: bool
     within_tolerance: bool
@@ -80,8 +81,8 @@ def compare_tensors(
     # Check shapes
     if reference.shape != candidate.shape:
         return TensorDiff(
-            max_diff=float('inf'),
-            mean_diff=float('inf'),
+            max_diff=float("inf"),
+            mean_diff=float("inf"),
             max_diff_idx=(),
             mismatch_ratio=1.0,
             shape_match=False,
@@ -121,7 +122,7 @@ def compare_tensors(
 def detect_systematic_bias(
     reference: torch.Tensor,
     candidate: torch.Tensor,
-) -> Optional[str]:
+) -> str | None:
     """Detect systematic biases in the difference."""
 
     if reference.shape != candidate.shape:
@@ -137,7 +138,7 @@ def detect_systematic_bias(
 
     # Detect mean shift (bias)
     if ref_std > 0 and abs(mean_diff) > 3 * std_diff:
-        return f"Mean shift detected: {mean_diff:.6f} (3σ = {3*std_diff:.6f})"
+        return f"Mean shift detected: {mean_diff:.6f} (3σ = {3 * std_diff:.6f})"
 
     # Detect scale drift
     cand_std = cand.std().item()
@@ -151,7 +152,7 @@ def detect_systematic_bias(
 
 def load_test_data(
     manifest_path: Path,
-) -> List[Dict]:
+) -> list[dict]:
     """Load test data from manifest."""
     with open(manifest_path) as f:
         manifest = json.load(f)
@@ -168,12 +169,14 @@ def load_test_data(
             with open(json_file) as f:
                 metadata = json.load(f)
 
-            tests.append({
-                "name": test["name"],
-                "hash": test["hash"],
-                "tensors": tensors,
-                "metadata": metadata,
-            })
+            tests.append(
+                {
+                    "name": test["name"],
+                    "hash": test["hash"],
+                    "tensors": tensors,
+                    "metadata": metadata,
+                }
+            )
 
     return tests
 
@@ -182,7 +185,7 @@ def run_parity_test(
     ref_dir: Path,
     cand_dir: Path,
     tolerance: Tolerance,
-) -> Dict:
+) -> dict:
     """Run full parity test suite."""
 
     # Load manifests
@@ -211,7 +214,7 @@ def run_parity_test(
             "passed": 0,
             "failed": 0,
             "skipped": 0,
-        }
+        },
     }
 
     for ref_test in ref_tests:
@@ -221,12 +224,14 @@ def run_parity_test(
         results["summary"]["total"] += 1
 
         if test_hash not in cand_by_hash:
-            results["tests"].append({
-                "name": test_name,
-                "hash": test_hash,
-                "status": "SKIPPED",
-                "reason": "No matching candidate",
-            })
+            results["tests"].append(
+                {
+                    "name": test_name,
+                    "hash": test_hash,
+                    "status": "SKIPPED",
+                    "reason": "No matching candidate",
+                }
+            )
             results["summary"]["skipped"] += 1
             continue
 
@@ -238,10 +243,12 @@ def run_parity_test(
 
         for tensor_name, ref_tensor in ref_test["tensors"].items():
             if tensor_name not in cand_test["tensors"]:
-                tensor_results.append({
-                    "tensor": tensor_name,
-                    "status": "MISSING",
-                })
+                tensor_results.append(
+                    {
+                        "tensor": tensor_name,
+                        "status": "MISSING",
+                    }
+                )
                 all_passed = False
                 continue
 
@@ -269,12 +276,14 @@ def run_parity_test(
             if not (diff.within_tolerance and diff.shape_match):
                 all_passed = False
 
-        results["tests"].append({
-            "name": test_name,
-            "hash": test_hash,
-            "status": "PASS" if all_passed else "FAIL",
-            "tensors": tensor_results,
-        })
+        results["tests"].append(
+            {
+                "name": test_name,
+                "hash": test_hash,
+                "status": "PASS" if all_passed else "FAIL",
+                "tensors": tensor_results,
+            }
+        )
 
         if all_passed:
             results["summary"]["passed"] += 1
@@ -284,22 +293,24 @@ def run_parity_test(
     return results
 
 
-def print_results(results: Dict):
+def print_results(results: dict):
     """Print results in human-readable format."""
 
     if "error" in results:
         print(f"ERROR: {results['error']}")
         return
 
-    print(f"=== MegaBlocks Parity Validation ===")
+    print("=== MegaBlocks Parity Validation ===")
     print(f"Reference: {results['reference_dir']}")
     print(f"Candidate: {results['candidate_dir']}")
     print(f"Tolerance: {results['tolerance']}")
     print()
 
     summary = results["summary"]
-    print(f"Summary: {summary['passed']}/{summary['total']} passed, "
-          f"{summary['failed']} failed, {summary['skipped']} skipped")
+    print(
+        f"Summary: {summary['passed']}/{summary['total']} passed, "
+        f"{summary['failed']} failed, {summary['skipped']} skipped"
+    )
     print()
 
     for test in results["tests"]:

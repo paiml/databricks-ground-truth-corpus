@@ -27,7 +27,6 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 import torch
 from safetensors.torch import save_file
@@ -39,7 +38,7 @@ def hash_input(tensor: torch.Tensor) -> str:
     return hashlib.sha256(data).hexdigest()[:16]
 
 
-def create_megablocks_layer(config: Dict, layer_type: str = "dmoe"):
+def create_megablocks_layer(config: dict, layer_type: str = "dmoe"):
     """Create a MegaBlocks MoE or dMoE layer from config."""
     from megablocks.layers.arguments import Arguments
 
@@ -57,19 +56,25 @@ def create_megablocks_layer(config: Dict, layer_type: str = "dmoe"):
 
     if layer_type == "dmoe":
         from megablocks.layers.dmoe import dMoE
+
         return dMoE(args), args
     else:
         from megablocks.layers.moe import MoE
+
         return MoE(args), args
 
 
 def generate_test_inputs(
     hidden_size: int,
-    batch_sizes: List[int] = [1],
-    seq_lengths: List[int] = [1, 128, 512],
+    batch_sizes: list[int] | None = None,
+    seq_lengths: list[int] | None = None,
     seed: int = 42,
-) -> List[Tuple[torch.Tensor, str]]:
+) -> list[tuple[torch.Tensor, str]]:
     """Generate deterministic test inputs (same as HF script)."""
+    if seq_lengths is None:
+        seq_lengths = [1, 128, 512]
+    if batch_sizes is None:
+        batch_sizes = [1]
     torch.manual_seed(seed)
 
     inputs = []
@@ -86,7 +91,7 @@ def capture_layer_outputs(
     layer,
     input_tensor: torch.Tensor,
     args,
-) -> Dict[str, torch.Tensor]:
+) -> dict[str, torch.Tensor]:
     """Capture intermediate outputs from MegaBlocks layer."""
     captures = {}
 
@@ -94,10 +99,10 @@ def capture_layer_outputs(
     captures["input"] = input_tensor.detach().clone()
 
     # Get router logits if available
-    if hasattr(layer, 'router'):
+    if hasattr(layer, "router"):
         with torch.no_grad():
             # Reshape for router: (batch * seq, hidden)
-            batch, seq_len, hidden = input_tensor.shape
+            _batch, _seq_len, hidden = input_tensor.shape
             flat_input = input_tensor.view(-1, hidden)
 
             # Get router weights
@@ -105,7 +110,7 @@ def capture_layer_outputs(
             captures["router_logits"] = router_logits.detach().clone()
 
             # Get expert selection
-            if hasattr(torch, 'topk'):
+            if hasattr(torch, "topk"):
                 top_k = args.moe_top_k
                 router_probs = torch.softmax(router_logits, dim=-1)
                 top_probs, top_indices = torch.topk(router_probs, top_k, dim=-1)
@@ -204,11 +209,13 @@ def main():
         with open(output_dir / f"{input_name}_{input_hash}.json", "w") as f:
             json.dump(test_data, f, indent=2)
 
-        manifest["tests"].append({
-            "name": input_name,
-            "hash": input_hash,
-            "file": f"{input_name}_{input_hash}.safetensors",
-        })
+        manifest["tests"].append(
+            {
+                "name": input_name,
+                "hash": input_hash,
+                "file": f"{input_name}_{input_hash}.safetensors",
+            }
+        )
 
         print(f"  Saved: {input_name}_{input_hash}.safetensors")
 

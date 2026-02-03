@@ -28,7 +28,6 @@ import hashlib
 import json
 import sys
 from dataclasses import dataclass, field
-from typing import Dict, List, Set, Tuple
 
 import numpy as np
 
@@ -36,18 +35,20 @@ import numpy as np
 @dataclass
 class TestResult:
     """Result of a single test case."""
+
     name: str
     passed: bool
     message: str
     precision: float = 0.0
     recall: float = 0.0
     f1: float = 0.0
-    details: Dict = field(default_factory=dict)
+    details: dict = field(default_factory=dict)
 
 
 # =============================================================================
 # Duplicate Detection Algorithms (Reference Implementation)
 # =============================================================================
+
 
 class DuplicateDetector:
     """Reference duplicate detector using multiple algorithms."""
@@ -63,16 +64,16 @@ class DuplicateDetector:
 
     def exact_hash(self, text: str) -> str:
         """SHA-256 hash for exact duplicate detection."""
-        return hashlib.sha256(text.encode('utf-8')).hexdigest()
+        return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
-    def get_ngrams(self, text: str) -> Set[str]:
+    def get_ngrams(self, text: str) -> set[str]:
         """Extract character n-grams from text."""
         text = text.lower().strip()
         if len(text) < self.ngram_size:
             return {text}
-        return {text[i:i+self.ngram_size] for i in range(len(text) - self.ngram_size + 1)}
+        return {text[i : i + self.ngram_size] for i in range(len(text) - self.ngram_size + 1)}
 
-    def minhash_signature(self, ngrams: Set[str]) -> np.ndarray:
+    def minhash_signature(self, ngrams: set[str]) -> np.ndarray:
         """Compute MinHash signature for a set of n-grams."""
         if not ngrams:
             return np.full(self.num_hashes, np.inf)
@@ -82,13 +83,13 @@ class DuplicateDetector:
 
         # Compute MinHash for each hash function
         signature = np.full(self.num_hashes, np.inf)
-        for i, ng_hash in enumerate(ngram_hashes):
+        for _i, ng_hash in enumerate(ngram_hashes):
             h = (self.hash_a * ng_hash + self.hash_b) % self.prime
             signature = np.minimum(signature, h)
 
         return signature
 
-    def jaccard_similarity(self, set1: Set[str], set2: Set[str]) -> float:
+    def jaccard_similarity(self, set1: set[str], set2: set[str]) -> float:
         """Exact Jaccard similarity."""
         if not set1 and not set2:
             return 1.0
@@ -116,7 +117,9 @@ class DuplicateDetector:
         t2_lower = text2.lower()
 
         # Check if shorter text is contained in longer
-        shorter, longer = (t1_lower, t2_lower) if len(t1_lower) < len(t2_lower) else (t2_lower, t1_lower)
+        shorter, longer = (
+            (t1_lower, t2_lower) if len(t1_lower) < len(t2_lower) else (t2_lower, t1_lower)
+        )
 
         if len(shorter) >= min_length and shorter in longer:
             return 1.0  # Full containment
@@ -125,9 +128,9 @@ class DuplicateDetector:
 
     def find_duplicates(
         self,
-        documents: List[str],
+        documents: list[str],
         threshold: float = 0.9,
-    ) -> List[Tuple[int, int, float, str]]:
+    ) -> list[tuple[int, int, float, str]]:
         """Find all duplicate pairs above threshold.
 
         Returns: List of (idx1, idx2, similarity, method)
@@ -168,7 +171,8 @@ class DuplicateDetector:
 # Ground Truth Test Cases
 # =============================================================================
 
-def get_exact_duplicate_cases() -> Tuple[List[str], List[Tuple[int, int]]]:
+
+def get_exact_duplicate_cases() -> tuple[list[str], list[tuple[int, int]]]:
     """Test cases for exact duplicate detection."""
     documents = [
         "The quick brown fox jumps over the lazy dog.",
@@ -181,13 +185,13 @@ def get_exact_duplicate_cases() -> Tuple[List[str], List[Tuple[int, int]]]:
     return documents, expected_pairs
 
 
-def get_near_duplicate_cases() -> Tuple[List[str], List[Tuple[int, int]]]:
+def get_near_duplicate_cases() -> tuple[list[str], list[tuple[int, int]]]:
     """Test cases for near-duplicate detection."""
     documents = [
         "The quick brown fox jumps over the lazy dog.",
-        "The quick brown fox jumps over a lazy dog.",      # Near dup (1 word diff) - Jaccard ~0.86
+        "The quick brown fox jumps over a lazy dog.",  # Near dup (1 word diff) - Jaccard ~0.86
         "A completely different sentence about cats.",
-        "The quick brown fox jumps over the lazy dogs.",   # Near dup (1 char diff) - should be ~0.9+
+        "The quick brown fox jumps over the lazy dogs.",  # Near dup (1 char diff) - should be ~0.9+
         "Something entirely unrelated to animals.",
     ]
     # With threshold 0.8, expect (0,1) and (0,3)
@@ -195,7 +199,7 @@ def get_near_duplicate_cases() -> Tuple[List[str], List[Tuple[int, int]]]:
     return documents, expected_pairs
 
 
-def get_containment_cases() -> Tuple[List[str], List[Tuple[int, int]]]:
+def get_containment_cases() -> tuple[list[str], list[tuple[int, int]]]:
     """Test cases for substring containment detection.
 
     Note: Containment cases need low Jaccard similarity but high containment.
@@ -203,15 +207,15 @@ def get_containment_cases() -> Tuple[List[str], List[Tuple[int, int]]]:
     """
     documents = [
         "This is a very long document with many different words and phrases that make it quite unique in its content and structure.",
-        "long document",                                   # Short substring of 0 (low Jaccard, high containment)
+        "long document",  # Short substring of 0 (low Jaccard, high containment)
         "Completely different text about something else.",
-        "many different words",                            # Short substring of 0
+        "many different words",  # Short substring of 0
     ]
     expected_pairs = [(0, 1), (0, 3)]
     return documents, expected_pairs
 
 
-def get_no_duplicate_cases() -> Tuple[List[str], List[Tuple[int, int]]]:
+def get_no_duplicate_cases() -> tuple[list[str], list[tuple[int, int]]]:
     """Test cases that should have no duplicates."""
     documents = [
         "The quick brown fox jumps over the lazy dog.",
@@ -227,10 +231,11 @@ def get_no_duplicate_cases() -> Tuple[List[str], List[Tuple[int, int]]]:
 # Test Runner
 # =============================================================================
 
+
 def compute_metrics(
-    predicted_pairs: Set[Tuple[int, int]],
-    ground_truth_pairs: Set[Tuple[int, int]],
-) -> Tuple[float, float, float]:
+    predicted_pairs: set[tuple[int, int]],
+    ground_truth_pairs: set[tuple[int, int]],
+) -> tuple[float, float, float]:
     """Compute precision, recall, F1 for duplicate pairs."""
     if not predicted_pairs and not ground_truth_pairs:
         return 1.0, 1.0, 1.0
@@ -248,7 +253,7 @@ def compute_metrics(
     return precision, recall, f1
 
 
-def run_dedup_tests(detector: DuplicateDetector) -> List[TestResult]:
+def run_dedup_tests(detector: DuplicateDetector) -> list[TestResult]:
     """Run all duplicate detection tests."""
     results = []
 
@@ -258,13 +263,17 @@ def run_dedup_tests(detector: DuplicateDetector) -> List[TestResult]:
     pred_pairs = {(d[0], d[1]) for d in duplicates if d[3] == "exact"}
     gt_pairs = set(expected)
     precision, recall, f1 = compute_metrics(pred_pairs, gt_pairs)
-    results.append(TestResult(
-        name="Exact Duplicate Detection",
-        passed=precision == 1.0,  # Require perfect precision
-        message=f"P={precision:.3f} R={recall:.3f} F1={f1:.3f}",
-        precision=precision, recall=recall, f1=f1,
-        details={"predicted": list(pred_pairs), "expected": list(gt_pairs)}
-    ))
+    results.append(
+        TestResult(
+            name="Exact Duplicate Detection",
+            passed=precision == 1.0,  # Require perfect precision
+            message=f"P={precision:.3f} R={recall:.3f} F1={f1:.3f}",
+            precision=precision,
+            recall=recall,
+            f1=f1,
+            details={"predicted": list(pred_pairs), "expected": list(gt_pairs)},
+        )
+    )
 
     # Test near duplicates
     docs, expected = get_near_duplicate_cases()
@@ -272,14 +281,19 @@ def run_dedup_tests(detector: DuplicateDetector) -> List[TestResult]:
     pred_pairs = {(d[0], d[1]) for d in duplicates}
     gt_pairs = set(expected)
     precision, recall, f1 = compute_metrics(pred_pairs, gt_pairs)
-    results.append(TestResult(
-        name="Near-Duplicate Detection",
-        passed=f1 >= 0.8,
-        message=f"P={precision:.3f} R={recall:.3f} F1={f1:.3f}" if f1 >= 0.8 else
-                f"F1={f1:.3f} < 0.8 required",
-        precision=precision, recall=recall, f1=f1,
-        details={"predicted": list(pred_pairs), "expected": list(gt_pairs)}
-    ))
+    results.append(
+        TestResult(
+            name="Near-Duplicate Detection",
+            passed=f1 >= 0.8,
+            message=f"P={precision:.3f} R={recall:.3f} F1={f1:.3f}"
+            if f1 >= 0.8
+            else f"F1={f1:.3f} < 0.8 required",
+            precision=precision,
+            recall=recall,
+            f1=f1,
+            details={"predicted": list(pred_pairs), "expected": list(gt_pairs)},
+        )
+    )
 
     # Test containment
     docs, expected = get_containment_cases()
@@ -287,30 +301,38 @@ def run_dedup_tests(detector: DuplicateDetector) -> List[TestResult]:
     pred_pairs = {(d[0], d[1]) for d in duplicates if d[3] == "containment"}
     gt_pairs = set(expected)
     precision, recall, f1 = compute_metrics(pred_pairs, gt_pairs)
-    results.append(TestResult(
-        name="Substring Containment",
-        passed=f1 >= 0.8,
-        message=f"P={precision:.3f} R={recall:.3f} F1={f1:.3f}" if f1 >= 0.8 else
-                f"F1={f1:.3f} < 0.8 required",
-        precision=precision, recall=recall, f1=f1,
-    ))
+    results.append(
+        TestResult(
+            name="Substring Containment",
+            passed=f1 >= 0.8,
+            message=f"P={precision:.3f} R={recall:.3f} F1={f1:.3f}"
+            if f1 >= 0.8
+            else f"F1={f1:.3f} < 0.8 required",
+            precision=precision,
+            recall=recall,
+            f1=f1,
+        )
+    )
 
     # Test no false positives
     docs, expected = get_no_duplicate_cases()
     duplicates = detector.find_duplicates(docs, threshold=0.9)
     pred_pairs = {(d[0], d[1]) for d in duplicates}
-    results.append(TestResult(
-        name="No False Positives",
-        passed=len(pred_pairs) == 0,
-        message="No false positives" if len(pred_pairs) == 0 else
-                f"Found {len(pred_pairs)} false positive pairs",
-        details={"false_positives": list(pred_pairs)}
-    ))
+    results.append(
+        TestResult(
+            name="No False Positives",
+            passed=len(pred_pairs) == 0,
+            message="No false positives"
+            if len(pred_pairs) == 0
+            else f"Found {len(pred_pairs)} false positive pairs",
+            details={"false_positives": list(pred_pairs)},
+        )
+    )
 
     return results
 
 
-def run_minhash_property_tests(detector: DuplicateDetector) -> List[TestResult]:
+def run_minhash_property_tests(detector: DuplicateDetector) -> list[TestResult]:
     """Test MinHash algorithm properties."""
     results = []
 
@@ -319,11 +341,13 @@ def run_minhash_property_tests(detector: DuplicateDetector) -> List[TestResult]:
     ngrams = detector.get_ngrams(text)
     sig1 = detector.minhash_signature(ngrams)
     sig2 = detector.minhash_signature(ngrams)
-    results.append(TestResult(
-        name="MinHash Determinism",
-        passed=np.array_equal(sig1, sig2),
-        message="MinHash is deterministic",
-    ))
+    results.append(
+        TestResult(
+            name="MinHash Determinism",
+            passed=np.array_equal(sig1, sig2),
+            message="MinHash is deterministic",
+        )
+    )
 
     # Test: Identical texts have similarity 1.0
     ngrams1 = detector.get_ngrams("Hello world")
@@ -331,11 +355,13 @@ def run_minhash_property_tests(detector: DuplicateDetector) -> List[TestResult]:
     sig1 = detector.minhash_signature(ngrams1)
     sig2 = detector.minhash_signature(ngrams2)
     sim = detector.minhash_similarity(sig1, sig2)
-    results.append(TestResult(
-        name="Identical Text Similarity",
-        passed=sim == 1.0,
-        message=f"Similarity = {sim}",
-    ))
+    results.append(
+        TestResult(
+            name="Identical Text Similarity",
+            passed=sim == 1.0,
+            message=f"Similarity = {sim}",
+        )
+    )
 
     # Test: Completely different texts have low similarity
     ngrams1 = detector.get_ngrams("The quick brown fox jumps over the lazy dog")
@@ -343,20 +369,24 @@ def run_minhash_property_tests(detector: DuplicateDetector) -> List[TestResult]:
     sig1 = detector.minhash_signature(ngrams1)
     sig2 = detector.minhash_signature(ngrams2)
     sim = detector.minhash_similarity(sig1, sig2)
-    results.append(TestResult(
-        name="Different Text Low Similarity",
-        passed=sim < 0.5,
-        message=f"Similarity = {sim:.3f} (expected < 0.5)",
-    ))
+    results.append(
+        TestResult(
+            name="Different Text Low Similarity",
+            passed=sim < 0.5,
+            message=f"Similarity = {sim:.3f} (expected < 0.5)",
+        )
+    )
 
     # Test: Empty input handling
     ngrams = detector.get_ngrams("")
-    sig = detector.minhash_signature(ngrams)
-    results.append(TestResult(
-        name="Empty Input Handling",
-        passed=True,  # Should not crash
-        message=f"Signature computed for empty input",
-    ))
+    detector.minhash_signature(ngrams)
+    results.append(
+        TestResult(
+            name="Empty Input Handling",
+            passed=True,  # Should not crash
+            message="Signature computed for empty input",
+        )
+    )
 
     return results
 
@@ -405,10 +435,9 @@ def main():
                 for r in dedup_results
             ],
             "minhash_tests": [
-                {"name": r.name, "passed": r.passed, "message": r.message}
-                for r in minhash_results
+                {"name": r.name, "passed": r.passed, "message": r.message} for r in minhash_results
             ],
-            "summary": {"passed": passed, "total": total}
+            "summary": {"passed": passed, "total": total},
         }
         with open(args.output, "w") as f:
             json.dump(output_data, f, indent=2)

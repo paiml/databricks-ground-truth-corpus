@@ -26,7 +26,6 @@ Usage:
 import argparse
 import sys
 from dataclasses import dataclass
-from typing import List, Tuple
 
 import torch
 import torch.nn as nn
@@ -51,7 +50,7 @@ class SimpleMoERouter(nn.Module):
         self.top_k = top_k
         self.gate = nn.Linear(hidden_size, num_experts, bias=False)
 
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Args:
             x: (batch, seq, hidden)
@@ -60,7 +59,7 @@ class SimpleMoERouter(nn.Module):
             expert_indices: (batch * seq, top_k)
             router_logits: (batch * seq, num_experts)
         """
-        batch, seq_len, hidden = x.shape
+        _batch, _seq_len, hidden = x.shape
         x_flat = x.view(-1, hidden)
 
         # Compute router logits
@@ -106,10 +105,9 @@ class SimpleMoE(nn.Module):
         self.top_k = top_k
 
         self.router = SimpleMoERouter(hidden_size, num_experts, top_k)
-        self.experts = nn.ModuleList([
-            SimpleExpertFFN(hidden_size, ffn_hidden_size)
-            for _ in range(num_experts)
-        ])
+        self.experts = nn.ModuleList(
+            [SimpleExpertFFN(hidden_size, ffn_hidden_size) for _ in range(num_experts)]
+        )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         batch, seq_len, hidden = x.shape
@@ -123,10 +121,10 @@ class SimpleMoE(nn.Module):
 
         for i in range(self.top_k):
             expert_idx = top_indices[:, i]
-            expert_prob = top_probs[:, i:i+1]
+            expert_prob = top_probs[:, i : i + 1]
 
             for e in range(self.num_experts):
-                mask = (expert_idx == e)
+                mask = expert_idx == e
                 if mask.any():
                     expert_input = x_flat[mask]
                     expert_output = self.experts[e](expert_input)
@@ -142,7 +140,7 @@ def test_router_normalization() -> TestResult:
     router = SimpleMoERouter(hidden_size=256, num_experts=8, top_k=2)
     x = torch.randn(2, 128, 256)
 
-    top_probs, top_indices, router_logits = router(x)
+    top_probs, _top_indices, _router_logits = router(x)
 
     # Check that top_probs sum to 1
     prob_sum = top_probs.sum(dim=-1)
@@ -151,8 +149,10 @@ def test_router_normalization() -> TestResult:
     return TestResult(
         name="Router Normalization",
         passed=all_close,
-        message="Top-k probabilities sum to 1" if all_close else f"Prob sums: {prob_sum.mean():.6f} ± {prob_sum.std():.6f}",
-        details={"mean_sum": prob_sum.mean().item(), "std_sum": prob_sum.std().item()}
+        message="Top-k probabilities sum to 1"
+        if all_close
+        else f"Prob sums: {prob_sum.mean():.6f} ± {prob_sum.std():.6f}",
+        details={"mean_sum": prob_sum.mean().item(), "std_sum": prob_sum.std().item()},
     )
 
 
@@ -160,7 +160,7 @@ def test_router_determinism() -> TestResult:
     """Test that router is deterministic with same seed."""
     torch.manual_seed(42)
     router = SimpleMoERouter(hidden_size=256, num_experts=8, top_k=2)
-    x = torch.randn(2, 128, 256)
+    torch.randn(2, 128, 256)
 
     # First pass
     torch.manual_seed(42)
@@ -178,7 +178,9 @@ def test_router_determinism() -> TestResult:
     return TestResult(
         name="Router Determinism",
         passed=identical,
-        message="Expert selection is deterministic" if identical else "Expert selection differs across runs",
+        message="Expert selection is deterministic"
+        if identical
+        else "Expert selection differs across runs",
     )
 
 
@@ -225,18 +227,16 @@ def test_gradient_flow() -> TestResult:
     # Check gradients
     has_input_grad = x.grad is not None and x.grad.abs().sum() > 0
     has_router_grad = moe.router.gate.weight.grad is not None
-    has_expert_grad = all(
-        e.w1.weight.grad is not None
-        for e in moe.experts
-    )
+    has_expert_grad = all(e.w1.weight.grad is not None for e in moe.experts)
 
     all_grads = has_input_grad and has_router_grad and has_expert_grad
 
     return TestResult(
         name="Gradient Flow",
         passed=all_grads,
-        message="Gradients flow through all components" if all_grads else
-                f"Missing grads: input={has_input_grad}, router={has_router_grad}, experts={has_expert_grad}",
+        message="Gradients flow through all components"
+        if all_grads
+        else f"Missing grads: input={has_input_grad}, router={has_router_grad}, experts={has_expert_grad}",
     )
 
 
@@ -264,9 +264,10 @@ def test_expert_load_distribution() -> TestResult:
     return TestResult(
         name="Expert Load Distribution",
         passed=dead_experts == 0,
-        message=f"No dead experts, load balance std/mean = {load_balance:.4f}" if dead_experts == 0 else
-                f"{dead_experts} dead experts detected",
-        details={"expert_counts": expert_counts.tolist(), "load_balance": load_balance.item()}
+        message=f"No dead experts, load balance std/mean = {load_balance:.4f}"
+        if dead_experts == 0
+        else f"{dead_experts} dead experts detected",
+        details={"expert_counts": expert_counts.tolist(), "load_balance": load_balance.item()},
     )
 
 
@@ -278,7 +279,7 @@ def test_top_k_selection() -> TestResult:
         router = SimpleMoERouter(hidden_size=256, num_experts=8, top_k=top_k)
         x = torch.randn(2, 128, 256)
 
-        top_probs, top_indices, _ = router(x)
+        _top_probs, top_indices, _ = router(x)
 
         if top_indices.shape[-1] != top_k:
             return TestResult(
@@ -320,12 +321,13 @@ def test_numerical_stability() -> TestResult:
     return TestResult(
         name="Numerical Stability",
         passed=all_stable,
-        message="Stable with extreme inputs" if all_stable else
-                f"Unstable: large={large_ok}, small={small_ok}, zero={zero_ok}",
+        message="Stable with extreme inputs"
+        if all_stable
+        else f"Unstable: large={large_ok}, small={small_ok}, zero={zero_ok}",
     )
 
 
-def run_all_tests() -> List[TestResult]:
+def run_all_tests() -> list[TestResult]:
     """Run all property tests."""
     tests = [
         test_router_normalization,
@@ -352,7 +354,7 @@ def run_all_tests() -> List[TestResult]:
     return results
 
 
-def run_megablocks_tests() -> List[TestResult]:
+def run_megablocks_tests() -> list[TestResult]:
     """Run tests with actual MegaBlocks if available."""
     results = []
 
@@ -360,15 +362,18 @@ def run_megablocks_tests() -> List[TestResult]:
         from megablocks.layers.arguments import Arguments
         from megablocks.layers.moe import MoE
     except ImportError:
-        return [TestResult(
-            name="MegaBlocks Import",
-            passed=False,
-            message="MegaBlocks not available. Run with: uv run --with megablocks scripts/test_moe_properties.py --with-megablocks",
-        )]
+        return [
+            TestResult(
+                name="MegaBlocks Import",
+                passed=False,
+                message="MegaBlocks not available. Run with: uv run --with megablocks scripts/test_moe_properties.py --with-megablocks",
+            )
+        ]
 
     # Check if grouped_gemm is available (required for triton >= 3.2.0)
     try:
         import megablocks.grouped_gemm_util as gg_util
+
         grouped_gemm_available = gg_util._grouped_gemm_is_available
     except Exception:
         grouped_gemm_available = False
@@ -408,41 +413,51 @@ def run_megablocks_tests() -> List[TestResult]:
         # Finite outputs
         finite_ok = torch.isfinite(y).all()
 
-        results.append(TestResult(
-            name=f"MegaBlocks MoE Forward (mlp_impl={mlp_impl})",
-            passed=shape_ok and finite_ok,
-            message="MoE forward pass successful" if (shape_ok and finite_ok) else
-                    f"Issues: shape={shape_ok}, finite={finite_ok}",
-        ))
+        results.append(
+            TestResult(
+                name=f"MegaBlocks MoE Forward (mlp_impl={mlp_impl})",
+                passed=shape_ok and finite_ok,
+                message="MoE forward pass successful"
+                if (shape_ok and finite_ok)
+                else f"Issues: shape={shape_ok}, finite={finite_ok}",
+            )
+        )
 
     except ValueError as e:
         if "triton" in str(e).lower() or "sparse" in str(e).lower():
-            results.append(TestResult(
-                name="MegaBlocks MoE Forward",
-                passed=True,  # Mark as passed - this is a known env limitation
-                message=f"SKIPPED: {e}. Install grouped_gemm for full testing.",
-            ))
+            results.append(
+                TestResult(
+                    name="MegaBlocks MoE Forward",
+                    passed=True,  # Mark as passed - this is a known env limitation
+                    message=f"SKIPPED: {e}. Install grouped_gemm for full testing.",
+                )
+            )
         else:
-            results.append(TestResult(
-                name="MegaBlocks MoE Forward",
-                passed=False,
-                message=f"Config error: {e}",
-            ))
+            results.append(
+                TestResult(
+                    name="MegaBlocks MoE Forward",
+                    passed=False,
+                    message=f"Config error: {e}",
+                )
+            )
 
     except Exception as e:
-        results.append(TestResult(
-            name="MegaBlocks MoE Forward",
-            passed=False,
-            message=f"Error: {e}",
-        ))
+        results.append(
+            TestResult(
+                name="MegaBlocks MoE Forward",
+                passed=False,
+                message=f"Error: {e}",
+            )
+        )
 
     return results
 
 
 def main():
     parser = argparse.ArgumentParser(description="Test MoE layer properties")
-    parser.add_argument("--with-megablocks", action="store_true",
-                        help="Also test actual MegaBlocks layer")
+    parser.add_argument(
+        "--with-megablocks", action="store_true", help="Also test actual MegaBlocks layer"
+    )
     args = parser.parse_args()
 
     print("=== MoE Layer Property Tests ===\n")

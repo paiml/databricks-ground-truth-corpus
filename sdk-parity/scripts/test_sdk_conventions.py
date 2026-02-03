@@ -28,43 +28,45 @@ import json
 import re
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 
 @dataclass
 class TestResult:
     """Result of a single test case."""
+
     name: str
     passed: bool
     message: str
     expected: Any = None
     actual: Any = None
-    details: Dict = field(default_factory=dict)
+    details: dict = field(default_factory=dict)
 
 
 # =============================================================================
 # Naming Convention Transformations
 # =============================================================================
 
+
 def snake_to_camel(name: str) -> str:
     """Convert snake_case to camelCase."""
-    components = name.split('_')
-    return components[0] + ''.join(x.title() for x in components[1:])
+    components = name.split("_")
+    return components[0] + "".join(x.title() for x in components[1:])
 
 
 def snake_to_pascal(name: str) -> str:
     """Convert snake_case to PascalCase."""
-    return ''.join(x.title() for x in name.split('_'))
+    return "".join(x.title() for x in name.split("_"))
 
 
 def camel_to_snake(name: str) -> str:
     """Convert camelCase to snake_case."""
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
 
-def test_naming_conventions() -> List[TestResult]:
+def test_naming_conventions() -> list[TestResult]:
     """Test naming convention transformations."""
     results = []
 
@@ -88,11 +90,13 @@ def test_naming_conventions() -> List[TestResult]:
         result = snake_to_camel(snake)
         if result != camel:
             all_pass = False
-    results.append(TestResult(
-        name="snake_case to camelCase",
-        passed=all_pass,
-        message=f"All {len(test_cases)} transformations correct" if all_pass else "Some failed",
-    ))
+    results.append(
+        TestResult(
+            name="snake_case to camelCase",
+            passed=all_pass,
+            message=f"All {len(test_cases)} transformations correct" if all_pass else "Some failed",
+        )
+    )
 
     # Test snake_case to PascalCase (Python -> Go)
     all_pass = True
@@ -100,11 +104,13 @@ def test_naming_conventions() -> List[TestResult]:
         result = snake_to_pascal(snake)
         if result != pascal:
             all_pass = False
-    results.append(TestResult(
-        name="snake_case to PascalCase",
-        passed=all_pass,
-        message=f"All {len(test_cases)} transformations correct" if all_pass else "Some failed",
-    ))
+    results.append(
+        TestResult(
+            name="snake_case to PascalCase",
+            passed=all_pass,
+            message=f"All {len(test_cases)} transformations correct" if all_pass else "Some failed",
+        )
+    )
 
     # Test camelCase to snake_case (Java -> Python)
     all_pass = True
@@ -112,11 +118,13 @@ def test_naming_conventions() -> List[TestResult]:
         result = camel_to_snake(camel)
         if result != snake:
             all_pass = False
-    results.append(TestResult(
-        name="camelCase to snake_case",
-        passed=all_pass,
-        message=f"All {len(test_cases)} transformations correct" if all_pass else "Some failed",
-    ))
+    results.append(
+        TestResult(
+            name="camelCase to snake_case",
+            passed=all_pass,
+            message=f"All {len(test_cases)} transformations correct" if all_pass else "Some failed",
+        )
+    )
 
     return results
 
@@ -150,12 +158,12 @@ API_TYPE_MAPPING = {
 }
 
 
-def test_type_mappings() -> List[TestResult]:
+def test_type_mappings() -> list[TestResult]:
     """Test type mapping conventions."""
     results = []
 
     # Test basic JSON type mappings
-    for json_type, (py_type, go_type, java_type) in TYPE_MAPPING.items():
+    for json_type, (_py_type, _go_type, _java_type) in TYPE_MAPPING.items():
         # Validate Python mapping
         if json_type == "string":
             value = "test"
@@ -179,21 +187,25 @@ def test_type_mappings() -> List[TestResult]:
             value = None
             assert value is None
 
-    results.append(TestResult(
-        name="JSON to Python type mapping",
-        passed=True,
-        message=f"All {len(TYPE_MAPPING)} type mappings validated",
-    ))
+    results.append(
+        TestResult(
+            name="JSON to Python type mapping",
+            passed=True,
+            message=f"All {len(TYPE_MAPPING)} type mappings validated",
+        )
+    )
 
     # Validate API-specific types
-    for field_name, (py_type, go_type, java_type) in API_TYPE_MAPPING.items():
+    for _field_name, (_py_type, _go_type, _java_type) in API_TYPE_MAPPING.items():
         pass  # Type documentation validated
 
-    results.append(TestResult(
-        name="API field type mapping",
-        passed=True,
-        message=f"All {len(API_TYPE_MAPPING)} API field types documented",
-    ))
+    results.append(
+        TestResult(
+            name="API field type mapping",
+            passed=True,
+            message=f"All {len(API_TYPE_MAPPING)} API field types documented",
+        )
+    )
 
     return results
 
@@ -202,7 +214,8 @@ def test_type_mappings() -> List[TestResult]:
 # Timestamp Format Tests
 # =============================================================================
 
-def test_timestamp_formats() -> List[TestResult]:
+
+def test_timestamp_formats() -> list[TestResult]:
     """Test ISO 8601 timestamp parsing."""
     results = []
 
@@ -215,29 +228,33 @@ def test_timestamp_formats() -> List[TestResult]:
     ]
 
     parsed_count = 0
-    for ts_str, desc in test_timestamps:
+    for ts_str, _desc in test_timestamps:
         try:
             # Python parsing
-            dt = datetime.fromisoformat(ts_str.replace('Z', '+00:00'))
+            dt = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
             assert dt.tzinfo is not None  # Should be timezone-aware
             parsed_count += 1
         except ValueError:
             pass
 
-    results.append(TestResult(
-        name="ISO 8601 timestamp parsing",
-        passed=parsed_count == len(test_timestamps),
-        message=f"{parsed_count}/{len(test_timestamps)} formats parsed",
-    ))
+    results.append(
+        TestResult(
+            name="ISO 8601 timestamp parsing",
+            passed=parsed_count == len(test_timestamps),
+            message=f"{parsed_count}/{len(test_timestamps)} formats parsed",
+        )
+    )
 
     # Test Unix millisecond timestamps (common in Databricks API)
     unix_ms = 1705315800123  # 2024-01-15T10:30:00.123Z
-    dt = datetime.fromtimestamp(unix_ms / 1000, tz=timezone.utc)
-    results.append(TestResult(
-        name="Unix millisecond timestamp",
-        passed=dt.year == 2024 and dt.month == 1 and dt.day == 15,
-        message=f"Parsed: {dt.isoformat()}",
-    ))
+    dt = datetime.fromtimestamp(unix_ms / 1000, tz=UTC)
+    results.append(
+        TestResult(
+            name="Unix millisecond timestamp",
+            passed=dt.year == 2024 and dt.month == 1 and dt.day == 15,
+            message=f"Parsed: {dt.isoformat()}",
+        )
+    )
 
     return results
 
@@ -280,7 +297,7 @@ PERMISSION_LEVEL_ENUM = [
 ]
 
 
-def test_enum_conventions() -> List[TestResult]:
+def test_enum_conventions() -> list[TestResult]:
     """Test enum representation conventions."""
     results = []
 
@@ -288,33 +305,41 @@ def test_enum_conventions() -> List[TestResult]:
     all_valid = True
     for enum_list in [CLUSTER_STATE_ENUM, RUN_LIFECYCLE_STATE_ENUM, PERMISSION_LEVEL_ENUM]:
         for value in enum_list:
-            if not re.match(r'^[A-Z][A-Z0-9_]*$', value):
+            if not re.match(r"^[A-Z][A-Z0-9_]*$", value):
                 all_valid = False
 
-    results.append(TestResult(
-        name="Enum values are SCREAMING_SNAKE_CASE",
-        passed=all_valid,
-        message="All enum values follow convention",
-    ))
+    results.append(
+        TestResult(
+            name="Enum values are SCREAMING_SNAKE_CASE",
+            passed=all_valid,
+            message="All enum values follow convention",
+        )
+    )
 
     # Test enum count
-    results.append(TestResult(
-        name="ClusterState enum values",
-        passed=len(CLUSTER_STATE_ENUM) == 8,
-        message=f"{len(CLUSTER_STATE_ENUM)} states defined",
-    ))
+    results.append(
+        TestResult(
+            name="ClusterState enum values",
+            passed=len(CLUSTER_STATE_ENUM) == 8,
+            message=f"{len(CLUSTER_STATE_ENUM)} states defined",
+        )
+    )
 
-    results.append(TestResult(
-        name="RunLifeCycleState enum values",
-        passed=len(RUN_LIFECYCLE_STATE_ENUM) == 8,
-        message=f"{len(RUN_LIFECYCLE_STATE_ENUM)} states defined",
-    ))
+    results.append(
+        TestResult(
+            name="RunLifeCycleState enum values",
+            passed=len(RUN_LIFECYCLE_STATE_ENUM) == 8,
+            message=f"{len(RUN_LIFECYCLE_STATE_ENUM)} states defined",
+        )
+    )
 
-    results.append(TestResult(
-        name="PermissionLevel enum values",
-        passed=len(PERMISSION_LEVEL_ENUM) == 7,
-        message=f"{len(PERMISSION_LEVEL_ENUM)} levels defined",
-    ))
+    results.append(
+        TestResult(
+            name="PermissionLevel enum values",
+            passed=len(PERMISSION_LEVEL_ENUM) == 7,
+            message=f"{len(PERMISSION_LEVEL_ENUM)} levels defined",
+        )
+    )
 
     return results
 
@@ -323,36 +348,43 @@ def test_enum_conventions() -> List[TestResult]:
 # Null Handling Tests
 # =============================================================================
 
-def test_null_handling() -> List[TestResult]:
+
+def test_null_handling() -> list[TestResult]:
     """Test null/None/nil handling conventions."""
     results = []
 
     # Test that None serializes to JSON null
     data = {"field": None}
     json_str = json.dumps(data)
-    results.append(TestResult(
-        name="Python None to JSON null",
-        passed='"field": null' in json_str or '"field":null' in json_str,
-        message=f"Serialized: {json_str}",
-    ))
+    results.append(
+        TestResult(
+            name="Python None to JSON null",
+            passed='"field": null' in json_str or '"field":null' in json_str,
+            message=f"Serialized: {json_str}",
+        )
+    )
 
     # Test that JSON null deserializes to None
     json_str = '{"field": null}'
     data = json.loads(json_str)
-    results.append(TestResult(
-        name="JSON null to Python None",
-        passed=data["field"] is None,
-        message=f"Deserialized: field={data['field']}",
-    ))
+    results.append(
+        TestResult(
+            name="JSON null to Python None",
+            passed=data["field"] is None,
+            message=f"Deserialized: field={data['field']}",
+        )
+    )
 
     # Test optional field omission
     data_without_optional = {"required_field": "value"}
     json_str = json.dumps(data_without_optional)
-    results.append(TestResult(
-        name="Optional field omission",
-        passed="optional" not in json_str,
-        message="Optional fields can be omitted",
-    ))
+    results.append(
+        TestResult(
+            name="Optional field omission",
+            passed="optional" not in json_str,
+            message="Optional fields can be omitted",
+        )
+    )
 
     return results
 
@@ -379,21 +411,23 @@ ERROR_CODES = [
 ]
 
 
-def test_error_formats() -> List[TestResult]:
+def test_error_formats() -> list[TestResult]:
     """Test error response format conventions."""
     results = []
 
     # Test error codes follow convention
     all_valid = True
     for code in ERROR_CODES:
-        if not re.match(r'^[A-Z][A-Z0-9_]*$', code):
+        if not re.match(r"^[A-Z][A-Z0-9_]*$", code):
             all_valid = False
 
-    results.append(TestResult(
-        name="Error codes are SCREAMING_SNAKE_CASE",
-        passed=all_valid,
-        message=f"All {len(ERROR_CODES)} error codes valid",
-    ))
+    results.append(
+        TestResult(
+            name="Error codes are SCREAMING_SNAKE_CASE",
+            passed=all_valid,
+            message=f"All {len(ERROR_CODES)} error codes valid",
+        )
+    )
 
     # Test expected error response structure
     sample_error = {
@@ -402,17 +436,19 @@ def test_error_formats() -> List[TestResult]:
     }
 
     has_required_fields = (
-        "error_code" in sample_error and
-        "message" in sample_error and
-        isinstance(sample_error["error_code"], str) and
-        isinstance(sample_error["message"], str)
+        "error_code" in sample_error
+        and "message" in sample_error
+        and isinstance(sample_error["error_code"], str)
+        and isinstance(sample_error["message"], str)
     )
 
-    results.append(TestResult(
-        name="Error response schema",
-        passed=has_required_fields,
-        message="error_code and message fields present",
-    ))
+    results.append(
+        TestResult(
+            name="Error response schema",
+            passed=has_required_fields,
+            message="error_code and message fields present",
+        )
+    )
 
     return results
 
@@ -421,7 +457,8 @@ def test_error_formats() -> List[TestResult]:
 # JSON Field Ordering Tests
 # =============================================================================
 
-def test_json_serialization() -> List[TestResult]:
+
+def test_json_serialization() -> list[TestResult]:
     """Test JSON serialization conventions."""
     results = []
 
@@ -432,11 +469,13 @@ def test_json_serialization() -> List[TestResult]:
     json1 = json.dumps(data1, sort_keys=True)
     json2 = json.dumps(data2, sort_keys=True)
 
-    results.append(TestResult(
-        name="Sorted JSON produces consistent output",
-        passed=json1 == json2,
-        message=f"Both serialize to: {json1}",
-    ))
+    results.append(
+        TestResult(
+            name="Sorted JSON produces consistent output",
+            passed=json1 == json2,
+            message=f"Both serialize to: {json1}",
+        )
+    )
 
     # Test nested object serialization
     nested = {
@@ -446,27 +485,31 @@ def test_json_serialization() -> List[TestResult]:
         },
         "metadata": {
             "created_at": 1705315800000,
-        }
+        },
     }
     json_str = json.dumps(nested)
     roundtrip = json.loads(json_str)
 
-    results.append(TestResult(
-        name="Nested object roundtrip",
-        passed=roundtrip == nested,
-        message="Nested objects preserved",
-    ))
+    results.append(
+        TestResult(
+            name="Nested object roundtrip",
+            passed=roundtrip == nested,
+            message="Nested objects preserved",
+        )
+    )
 
     # Test array serialization (order preserved)
     array_data = {"items": [3, 1, 4, 1, 5, 9]}
     json_str = json.dumps(array_data)
     roundtrip = json.loads(json_str)
 
-    results.append(TestResult(
-        name="Array order preserved",
-        passed=roundtrip["items"] == [3, 1, 4, 1, 5, 9],
-        message="Array order maintained",
-    ))
+    results.append(
+        TestResult(
+            name="Array order preserved",
+            passed=roundtrip["items"] == [3, 1, 4, 1, 5, 9],
+            message="Array order maintained",
+        )
+    )
 
     return results
 
@@ -474,6 +517,7 @@ def test_json_serialization() -> List[TestResult]:
 # =============================================================================
 # Main
 # =============================================================================
+
 
 def main():
     parser = argparse.ArgumentParser(description="Test SDK naming conventions")

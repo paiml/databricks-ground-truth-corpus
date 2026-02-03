@@ -28,10 +28,9 @@ import argparse
 import json
 import sys
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
 
 # langdetect for reference implementation
-from langdetect import detect, detect_langs, DetectorFactory
+from langdetect import DetectorFactory, detect_langs
 from langdetect.lang_detect_exception import LangDetectException
 
 # Set seed for reproducibility
@@ -41,32 +40,34 @@ DetectorFactory.seed = 42
 @dataclass
 class TestResult:
     """Result of a single test case."""
+
     name: str
     passed: bool
     message: str
     accuracy: float = 0.0
-    details: Dict = field(default_factory=dict)
+    details: dict = field(default_factory=dict)
 
 
 # =============================================================================
 # Language Detection (Reference Implementation using langdetect)
 # =============================================================================
 
+
 class LanguageDetector:
     """Reference language detector."""
 
     # Common programming language indicators
     CODE_INDICATORS = {
-        'python': ['def ', 'import ', 'class ', 'if __name__', 'print(', 'self.'],
-        'javascript': ['function ', 'const ', 'let ', 'var ', '=>', 'console.log'],
-        'java': ['public class', 'public static void', 'System.out', 'import java'],
-        'rust': ['fn ', 'let mut', 'impl ', 'pub fn', '::new()', 'println!'],
-        'sql': ['SELECT ', 'FROM ', 'WHERE ', 'INSERT INTO', 'CREATE TABLE'],
-        'html': ['<html', '<div', '<span', '</div>', 'class="'],
-        'css': ['{', '}', 'color:', 'margin:', 'padding:', 'display:'],
+        "python": ["def ", "import ", "class ", "if __name__", "print(", "self."],
+        "javascript": ["function ", "const ", "let ", "var ", "=>", "console.log"],
+        "java": ["public class", "public static void", "System.out", "import java"],
+        "rust": ["fn ", "let mut", "impl ", "pub fn", "::new()", "println!"],
+        "sql": ["SELECT ", "FROM ", "WHERE ", "INSERT INTO", "CREATE TABLE"],
+        "html": ["<html", "<div", "<span", "</div>", 'class="'],
+        "css": ["{", "}", "color:", "margin:", "padding:", "display:"],
     }
 
-    def detect_language(self, text: str) -> Tuple[str, float]:
+    def detect_language(self, text: str) -> tuple[str, float]:
         """Detect language of text.
 
         Returns: (language_code, confidence)
@@ -90,7 +91,7 @@ class LanguageDetector:
 
         return ("unknown", 0.0)
 
-    def _detect_code(self, text: str) -> Optional[str]:
+    def _detect_code(self, text: str) -> str | None:
         """Detect if text is code and which language."""
         text_lower = text.lower()
 
@@ -105,7 +106,7 @@ class LanguageDetector:
             return max(scores, key=scores.get)
         return None
 
-    def detect_batch(self, texts: List[str]) -> List[Tuple[str, float]]:
+    def detect_batch(self, texts: list[str]) -> list[tuple[str, float]]:
         """Detect languages for multiple texts."""
         return [self.detect_language(text) for text in texts]
 
@@ -114,7 +115,8 @@ class LanguageDetector:
 # Ground Truth Test Cases
 # =============================================================================
 
-def get_english_test_cases() -> List[Tuple[str, str]]:
+
+def get_english_test_cases() -> list[tuple[str, str]]:
     """English detection test cases."""
     return [
         ("The quick brown fox jumps over the lazy dog.", "en"),
@@ -124,7 +126,7 @@ def get_english_test_cases() -> List[Tuple[str, str]]:
     ]
 
 
-def get_multilingual_test_cases() -> List[Tuple[str, str]]:
+def get_multilingual_test_cases() -> list[tuple[str, str]]:
     """Non-English language test cases."""
     return [
         ("Bonjour, comment allez-vous aujourd'hui?", "fr"),
@@ -138,19 +140,19 @@ def get_multilingual_test_cases() -> List[Tuple[str, str]]:
     ]
 
 
-def get_code_test_cases() -> List[Tuple[str, str]]:
+def get_code_test_cases() -> list[tuple[str, str]]:
     """Programming language detection test cases."""
     return [
         ("def hello_world():\n    print('Hello, World!')", "code:python"),
         ("function greet() { console.log('Hello'); }", "code:javascript"),
         ("public class Main { public static void main(String[] args) {} }", "code:java"),
-        ("fn main() { println!(\"Hello\"); }", "code:rust"),
+        ('fn main() { println!("Hello"); }', "code:rust"),
         ("SELECT * FROM users WHERE id = 1;", "code:sql"),
         ("<html><body><div>Hello</div></body></html>", "code:html"),
     ]
 
 
-def get_short_text_cases() -> List[Tuple[str, str]]:
+def get_short_text_cases() -> list[tuple[str, str]]:
     """Short text detection (harder cases)."""
     return [
         ("Hello", "en"),
@@ -160,7 +162,7 @@ def get_short_text_cases() -> List[Tuple[str, str]]:
     ]
 
 
-def get_ambiguous_cases() -> List[Tuple[str, Optional[str]]]:
+def get_ambiguous_cases() -> list[tuple[str, str | None]]:
     """Ambiguous or edge cases."""
     return [
         ("", None),  # Empty
@@ -174,7 +176,8 @@ def get_ambiguous_cases() -> List[Tuple[str, Optional[str]]]:
 # Test Runner
 # =============================================================================
 
-def run_language_tests(detector: LanguageDetector) -> List[TestResult]:
+
+def run_language_tests(detector: LanguageDetector) -> list[TestResult]:
     """Run language detection tests."""
     results = []
 
@@ -187,12 +190,14 @@ def run_language_tests(detector: LanguageDetector) -> List[TestResult]:
             correct += 1
 
     accuracy = correct / len(cases) if cases else 0
-    results.append(TestResult(
-        name="English Detection",
-        passed=accuracy >= 0.95,
-        message=f"Accuracy: {accuracy:.1%} ({correct}/{len(cases)})",
-        accuracy=accuracy,
-    ))
+    results.append(
+        TestResult(
+            name="English Detection",
+            passed=accuracy >= 0.95,
+            message=f"Accuracy: {accuracy:.1%} ({correct}/{len(cases)})",
+            accuracy=accuracy,
+        )
+    )
 
     # Multilingual detection
     cases = get_multilingual_test_cases()
@@ -206,13 +211,15 @@ def run_language_tests(detector: LanguageDetector) -> List[TestResult]:
             failed.append((expected, detected, text[:30]))
 
     accuracy = correct / len(cases) if cases else 0
-    results.append(TestResult(
-        name="Multilingual Detection",
-        passed=accuracy >= 0.80,
-        message=f"Accuracy: {accuracy:.1%} ({correct}/{len(cases)})",
-        accuracy=accuracy,
-        details={"failed": failed} if failed else {},
-    ))
+    results.append(
+        TestResult(
+            name="Multilingual Detection",
+            passed=accuracy >= 0.80,
+            message=f"Accuracy: {accuracy:.1%} ({correct}/{len(cases)})",
+            accuracy=accuracy,
+            details={"failed": failed} if failed else {},
+        )
+    )
 
     # Code detection
     cases = get_code_test_cases()
@@ -226,95 +233,111 @@ def run_language_tests(detector: LanguageDetector) -> List[TestResult]:
             failed.append((expected, detected))
 
     accuracy = correct / len(cases) if cases else 0
-    results.append(TestResult(
-        name="Code Detection",
-        passed=accuracy >= 0.90,
-        message=f"Accuracy: {accuracy:.1%} ({correct}/{len(cases)})",
-        accuracy=accuracy,
-        details={"failed": failed} if failed else {},
-    ))
+    results.append(
+        TestResult(
+            name="Code Detection",
+            passed=accuracy >= 0.90,
+            message=f"Accuracy: {accuracy:.1%} ({correct}/{len(cases)})",
+            accuracy=accuracy,
+            details={"failed": failed} if failed else {},
+        )
+    )
 
     # Short text
     cases = get_short_text_cases()
     correct = 0
     for text, expected in cases:
-        detected, conf = detector.detect_language(text)
+        detected, _conf = detector.detect_language(text)
         if detected == expected:
             correct += 1
 
     accuracy = correct / len(cases) if cases else 0
-    results.append(TestResult(
-        name="Short Text Detection",
-        passed=accuracy >= 0.50,  # Lower threshold for short text
-        message=f"Accuracy: {accuracy:.1%} ({correct}/{len(cases)})",
-        accuracy=accuracy,
-    ))
+    results.append(
+        TestResult(
+            name="Short Text Detection",
+            passed=accuracy >= 0.50,  # Lower threshold for short text
+            message=f"Accuracy: {accuracy:.1%} ({correct}/{len(cases)})",
+            accuracy=accuracy,
+        )
+    )
 
     return results
 
 
-def run_edge_case_tests(detector: LanguageDetector) -> List[TestResult]:
+def run_edge_case_tests(detector: LanguageDetector) -> list[TestResult]:
     """Test edge cases and error handling."""
     results = []
 
     # Empty input
     detected, conf = detector.detect_language("")
-    results.append(TestResult(
-        name="Empty Input",
-        passed=detected == "unknown" and conf == 0.0,
-        message=f"Returned: {detected} ({conf})",
-    ))
+    results.append(
+        TestResult(
+            name="Empty Input",
+            passed=detected == "unknown" and conf == 0.0,
+            message=f"Returned: {detected} ({conf})",
+        )
+    )
 
     # Numbers only
     detected, conf = detector.detect_language("12345 67890")
-    results.append(TestResult(
-        name="Numbers Only",
-        passed=True,  # Should not crash
-        message=f"Returned: {detected} ({conf:.2f})",
-    ))
+    results.append(
+        TestResult(
+            name="Numbers Only",
+            passed=True,  # Should not crash
+            message=f"Returned: {detected} ({conf:.2f})",
+        )
+    )
 
     # Mixed content
     text = "Hello world! def foo(): print('bar')"
     detected, conf = detector.detect_language(text)
-    results.append(TestResult(
-        name="Mixed Natural/Code",
-        passed=True,  # Accept any reasonable result
-        message=f"Detected: {detected} ({conf:.2f})",
-    ))
+    results.append(
+        TestResult(
+            name="Mixed Natural/Code",
+            passed=True,  # Accept any reasonable result
+            message=f"Detected: {detected} ({conf:.2f})",
+        )
+    )
 
     # Unicode
     text = "Cześć, jak się masz? 🎉"
     detected, conf = detector.detect_language(text)
-    results.append(TestResult(
-        name="Unicode with Emoji",
-        passed=True,  # Should not crash
-        message=f"Detected: {detected} ({conf:.2f})",
-    ))
+    results.append(
+        TestResult(
+            name="Unicode with Emoji",
+            passed=True,  # Should not crash
+            message=f"Detected: {detected} ({conf:.2f})",
+        )
+    )
 
     return results
 
 
-def run_confidence_tests(detector: LanguageDetector) -> List[TestResult]:
+def run_confidence_tests(detector: LanguageDetector) -> list[TestResult]:
     """Test confidence calibration."""
     results = []
 
     # High confidence for clear text
     text = "The quick brown fox jumps over the lazy dog. This is a very clear English sentence."
     detected, conf = detector.detect_language(text)
-    results.append(TestResult(
-        name="High Confidence for Clear Text",
-        passed=conf >= 0.9,
-        message=f"Confidence: {conf:.2f} (expected >= 0.9)",
-    ))
+    results.append(
+        TestResult(
+            name="High Confidence for Clear Text",
+            passed=conf >= 0.9,
+            message=f"Confidence: {conf:.2f} (expected >= 0.9)",
+        )
+    )
 
     # Lower confidence for ambiguous
     text = "OK"
-    detected, conf = detector.detect_language(text)
-    results.append(TestResult(
-        name="Lower Confidence for Ambiguous",
-        passed=True,  # Just check it doesn't claim high confidence
-        message=f"Confidence: {conf:.2f}",
-    ))
+    _detected, conf = detector.detect_language(text)
+    results.append(
+        TestResult(
+            name="Lower Confidence for Ambiguous",
+            passed=True,  # Just check it doesn't claim high confidence
+            message=f"Confidence: {conf:.2f}",
+        )
+    )
 
     return results
 
@@ -363,18 +386,15 @@ def main():
     if args.output:
         output_data = {
             "language_tests": [
-                {"name": r.name, "passed": r.passed, "accuracy": r.accuracy}
-                for r in lang_results
+                {"name": r.name, "passed": r.passed, "accuracy": r.accuracy} for r in lang_results
             ],
             "edge_tests": [
-                {"name": r.name, "passed": r.passed, "message": r.message}
-                for r in edge_results
+                {"name": r.name, "passed": r.passed, "message": r.message} for r in edge_results
             ],
             "confidence_tests": [
-                {"name": r.name, "passed": r.passed, "message": r.message}
-                for r in conf_results
+                {"name": r.name, "passed": r.passed, "message": r.message} for r in conf_results
             ],
-            "summary": {"passed": passed, "total": total}
+            "summary": {"passed": passed, "total": total},
         }
         with open(args.output, "w") as f:
             json.dump(output_data, f, indent=2)

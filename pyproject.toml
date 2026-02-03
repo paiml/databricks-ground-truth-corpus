@@ -1,0 +1,79 @@
+[project]
+name = "databricks-ground-truth-corpus"
+version = "0.1.0"
+description = "Popperian falsification corpus for Databricks OSS projects"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "ARG",    # flake8-unused-arguments
+    "SIM",    # flake8-simplify
+    "TCH",    # flake8-type-checking
+    "PTH",    # flake8-use-pathlib
+    "RUF",    # Ruff-specific rules
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B007",   # unused loop variable - common in test iteration
+    "B008",   # function call in default argument
+    "ARG001", # unused function argument (common in test fixtures)
+    "PTH123", # open() vs Path.open() - simple scripts, not worth complexity
+    "RUF001", # ambiguous Unicode - intentional for multilingual test data
+    "RUF012", # ClassVar for mutable class attrs - overkill for test classes
+    "RUF059", # unused unpacked variable - common in tuple unpacking
+    "SIM108", # ternary vs if-else - readability preference
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["databricks_ground_truth_corpus"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ty.environment]
+python-version = "3.11"
+
+[tool.ty.rules]
+# Ignore unresolved imports - dependencies are in PEP 723 inline script metadata
+unresolved-import = "ignore"
+# These are type-checker false positives for dynamically initialized attributes
+not-subscriptable = "ignore"
+possibly-missing-attribute = "ignore"
+# False positives for valid runtime code
+no-matching-overload = "ignore"
+invalid-assignment = "ignore"
+invalid-argument-type = "ignore"
+
+[tool.coverage.run]
+source = [
+    "lilac/scripts",
+    "megablocks/scripts",
+    "benchmarks/scripts",
+    "spark-extensions/scripts",
+    "sdk-parity/scripts",
+]
+omit = ["*/__pycache__/*", "*/test_*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+fail_under = 95
