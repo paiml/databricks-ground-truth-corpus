@@ -343,7 +343,7 @@
 
 | Domain | Total | Passed | Failed | Skipped | Notes |
 |--------|-------|--------|--------|---------|-------|
-| SDK Parity | 45 | 0 | 0 | 45 | Requires workspace |
+| SDK Parity | 45 | 19 | 0 | 26 | Convention ground truth complete |
 | MegaBlocks | 30 | 8 | 0 | 22 | Reference impl complete; tensor parity needs grouped_gemm |
 | SQL Connectors | 55 | 0 | 0 | 55 | Requires workspace |
 | Lilac | 45 | 27 | 1 | 17 | PII/Dedup/LangID complete |
@@ -351,7 +351,7 @@
 | Terraform | 30 | 0 | 0 | 30 | Requires workspace |
 | Spark Extensions | 40 | 36 | 0 | 4 | Pandas API ground truth complete |
 | Benchmarks | 35 | 15 | 0 | 20 | Oracle validation complete |
-| **TOTAL** | **315** | **86** | **1** | **228** |
+| **TOTAL** | **315** | **105** | **1** | **209** |
 
 ---
 

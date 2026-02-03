@@ -3,7 +3,7 @@
 <div align="center">
 
 ![Databricks Ground Truth Corpus](https://img.shields.io/badge/Popperian-Falsification-red?style=for-the-badge&logo=databricks)
-![Tests](https://img.shields.io/badge/Tests-86%2F315%20Passing-brightgreen?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-105%2F315%20Passing-brightgreen?style=for-the-badge)
 ![Coverage](https://img.shields.io/badge/Domains-8-blue?style=for-the-badge)
 
 **Cross-implementation validation corpus using Popperian falsification methodology**
@@ -20,7 +20,7 @@
 | **Analysis Date** | 2026-02-03 |
 | **Repositories Analyzed** | 250 (80 active with >10 stars) |
 | **Test Coverage** | 315 falsification tests across 8 domains |
-| **Current Progress** | 86 tests passing (MegaBlocks, Lilac, Benchmarks, Spark Extensions) |
+| **Current Progress** | 105 tests passing (SDK, MegaBlocks, Lilac, Benchmarks, Spark Extensions) |
 
 ---
 
