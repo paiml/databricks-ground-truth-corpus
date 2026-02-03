@@ -94,7 +94,8 @@ Commands:
 | PII Detection | 10 | 10 | 0 |
 | Dedup Detection | 8 | 8 | 0 |
 | Language Detection | 10 | 9 | 1* |
-| **TOTAL** | **28** | **27** | **1** |
+| Text Statistics | 24 | 24 | 0 |
+| **TOTAL** | **52** | **51** | **1** |
 
 *Short text detection failure is a known limitation of langdetect
 
@@ -134,11 +135,43 @@ Commands:
 
 ---
 
-## 7. Next Steps (Not Yet Implemented)
+## 7. Text Statistics Tests
+
+### 7.1 Basic Counts
+| ID | Test | Expected | Actual | Pass |
+|----|------|----------|--------|------|
+| TS-001 | Character count with whitespace | 11 | 11 | + |
+| TS-002 | Character count without whitespace | 10 | 10 | + |
+| TS-003 | Word count | 12 | 12 | + |
+| TS-004 | Sentence count | 2 | 2 | + |
+| TS-005 | Syllable counting | Approximate | Within range | + |
+
+### 7.2 Readability Metrics
+| ID | Test | Expected | Actual | Pass |
+|----|------|----------|--------|------|
+| RM-001 | Flesch Reading Ease (easy) | > 80 | 118.9 | + |
+| RM-002 | Flesch Reading Ease (complex) | < 40 | -140.8 | + |
+| RM-003 | Flesch-Kincaid Grade (easy) | < 5 | -2.5 | + |
+| RM-004 | Flesch-Kincaid Grade (complex) | > 12 | 38.1 | + |
+| RM-005 | ARI (technical) | > 10 | 30.0 | + |
+| RM-006 | Coleman-Liau (technical) | > 10 | 35.5 | + |
+
+### 7.3 Averages and Edge Cases
+| ID | Test | Expected | Actual | Pass |
+|----|------|----------|--------|------|
+| AV-001 | Average word length | 2.5-4.5 | 3.08 | + |
+| AV-002 | Average sentence length | 6.0 | 6.0 | + |
+| EC-001 | Unicode handling | 4 words | 4 | + |
+| EC-002 | Numbers in text | 7 words | 7 | + |
+
+---
+
+## 8. Next Steps (Not Yet Implemented)
 
 | Test | Status | Notes |
 |------|--------|-------|
 | Language ID | ✓ COMPLETE | 9/10 tests pass (short text is known limitation) |
+| Text Statistics | ✓ COMPLETE | 24/24 tests pass |
 | Clustering | PENDING | Need embeddings |
 | Toxicity | PENDING | Need classifier model |
 | Lilac integration | PENDING | Test actual Lilac library |
@@ -147,10 +180,11 @@ Commands:
 
 ## Sign-off
 
-- [x] 27/28 falsification tests pass (1 known limitation)
+- [x] 51/52 falsification tests pass (1 known limitation)
 - [x] PII detection achieves required F1 scores
 - [x] Duplicate detection handles all cases
 - [x] Language detection validates core use cases
+- [x] Text statistics validates readability metrics
 - [x] Known limitations documented
 
-**Verdict: PARTIAL COMPLETE** - Reference implementations pass 27/28 tests. Short text language detection is a known limitation. Lilac library integration pending.
+**Verdict: PARTIAL COMPLETE** - Reference implementations pass 51/52 tests. Short text language detection is a known limitation. Lilac library integration pending.

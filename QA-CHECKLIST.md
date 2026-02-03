@@ -346,12 +346,12 @@
 | SDK Parity | 45 | 19 | 0 | 26 | Convention ground truth complete |
 | MegaBlocks | 30 | 8 | 0 | 22 | Reference impl complete; tensor parity needs grouped_gemm |
 | SQL Connectors | 55 | 0 | 0 | 55 | Requires workspace |
-| Lilac | 45 | 27 | 1 | 17 | PII/Dedup/LangID complete |
+| Lilac | 52 | 51 | 1 | 0 | PII/Dedup/LangID/TextStats complete |
 | CLI Tools | 35 | 0 | 0 | 35 | Requires workspace |
 | Terraform | 30 | 0 | 0 | 30 | Requires workspace |
 | Spark Extensions | 40 | 36 | 0 | 4 | Pandas API ground truth complete |
 | Benchmarks | 35 | 15 | 0 | 20 | Oracle validation complete |
-| **TOTAL** | **315** | **105** | **1** | **209** |
+| **TOTAL** | **322** | **129** | **1** | **192** |
 
 ---
 
