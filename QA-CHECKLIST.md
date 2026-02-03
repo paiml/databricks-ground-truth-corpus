@@ -349,9 +349,9 @@
 | Lilac | 45 | 27 | 1 | 17 | PII/Dedup/LangID complete |
 | CLI Tools | 35 | 0 | 0 | 35 | Requires workspace |
 | Terraform | 30 | 0 | 0 | 30 | Requires workspace |
-| Spark Extensions | 40 | 0 | 0 | 40 | Requires Spark |
+| Spark Extensions | 40 | 36 | 0 | 4 | Pandas API ground truth complete |
 | Benchmarks | 35 | 15 | 0 | 20 | Oracle validation complete |
-| **TOTAL** | **315** | **50** | **1** | **264** |
+| **TOTAL** | **315** | **86** | **1** | **228** |
 
 ---
 
